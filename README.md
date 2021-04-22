@@ -1,6 +1,6 @@
 # JIM
 
-Immediate Mode JSON Serialization Library in C
+Immediate Mode JSON Serialization Library in C. Similar to [imgui](https://github.com/ocornut/imgui) but for generating JSON.
 
 ## Example
 
