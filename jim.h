@@ -325,7 +325,7 @@ void jim_object_begin(Jim *jim)
 
 void jim_member_key(Jim *jim, const char *str, const unsigned int *size)
 {
-    // TODO: jim_member_key does not throw an error when used inside of array scope instead of object scope
+    // TODO(#3): jim_member_key does not throw an error when used inside of array scope instead of object scope
     if (jim->error == JIM_OK) {
         jim_element_begin(jim);
         Jim_Scope *scope = jim_stack_top(jim);
