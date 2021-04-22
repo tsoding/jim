@@ -1,9 +1,9 @@
 #ifndef JIM_H_
 #define JIM_H_
 
-#ifndef JIM_STACK_CAPACITY
-#define JIM_STACK_CAPACITY 128
-#endif // JIM_STACK_CAPACITY
+#ifndef JIM_SCOPES_CAPACITY
+#define JIM_SCOPES_CAPACITY 128
+#endif // JIM_SCOPES_CAPACITY
 
 typedef void* Jim_Sink;
 typedef size_t (*Jim_Write)(const void *ptr, size_t size, size_t nmemb, Jim_Sink sink);
@@ -11,8 +11,8 @@ typedef size_t (*Jim_Write)(const void *ptr, size_t size, size_t nmemb, Jim_Sink
 typedef enum {
     JIM_OK = 0,
     JIM_WRITE_ERROR,
-    JIM_STACK_OVERFLOW,
-    JIM_STACK_UNDERFLOW,
+    JIM_SCOPES_OVERFLOW,
+    JIM_SCOPES_UNDERFLOW,
     JIM_OUT_OF_SCOPE_KEY,
     JIM_DOUBLE_KEY
 } Jim_Error;
@@ -34,8 +34,8 @@ typedef struct {
     Jim_Sink sink;
     Jim_Write write;
     Jim_Error error;
-    Jim_Scope stack[JIM_STACK_CAPACITY];
-    size_t stack_size;
+    Jim_Scope scopes[JIM_SCOPES_CAPACITY];
+    size_t scopes_size;
 } Jim;
 
 void jim_null(Jim *jim);
@@ -67,36 +67,36 @@ static size_t jim_strlen(const char *s)
     return count;
 }
 
-static void jim_stack_push(Jim *jim, Jim_Scope_Kind kind)
+static void jim_scope_push(Jim *jim, Jim_Scope_Kind kind)
 {
     if (jim->error == JIM_OK) {
-        if (jim->stack_size < JIM_STACK_CAPACITY) {
-            jim->stack[jim->stack_size].kind = kind;
-            jim->stack[jim->stack_size].tail = 0;
-            jim->stack[jim->stack_size].key = 0;
-            jim->stack_size += 1;
+        if (jim->scopes_size < JIM_SCOPES_CAPACITY) {
+            jim->scopes[jim->scopes_size].kind = kind;
+            jim->scopes[jim->scopes_size].tail = 0;
+            jim->scopes[jim->scopes_size].key = 0;
+            jim->scopes_size += 1;
         } else {
-            jim->error = JIM_STACK_OVERFLOW;
+            jim->error = JIM_SCOPES_OVERFLOW;
         }
     }
 }
 
-static void jim_stack_pop(Jim *jim)
+static void jim_scope_pop(Jim *jim)
 {
     if (jim->error == JIM_OK) {
-        if (jim->stack_size > 0) {
-            jim->stack_size--;
+        if (jim->scopes_size > 0) {
+            jim->scopes_size--;
         } else {
-            jim->error = JIM_STACK_UNDERFLOW;
+            jim->error = JIM_SCOPES_UNDERFLOW;
         }
     }
 }
 
-static Jim_Scope *jim_stack_top(Jim *jim)
+static Jim_Scope *jim_current_scope(Jim *jim)
 {
     if (jim->error == JIM_OK) {
-        if (jim->stack_size > 0) {
-            return &jim->stack[jim->stack_size - 1];
+        if (jim->scopes_size > 0) {
+            return &jim->scopes[jim->scopes_size - 1];
         }
     }
 
@@ -135,7 +135,7 @@ static int jim_get_utf8_char_len(unsigned char ch)
 void jim_element_begin(Jim *jim)
 {
     if (jim->error == JIM_OK) {
-        Jim_Scope *scope = jim_stack_top(jim);
+        Jim_Scope *scope = jim_current_scope(jim);
         if (scope && scope->tail && !scope->key) {
             jim_write_cstr(jim, ",");
         }
@@ -145,7 +145,7 @@ void jim_element_begin(Jim *jim)
 void jim_element_end(Jim *jim)
 {
     if (jim->error == JIM_OK) {
-        Jim_Scope *scope = jim_stack_top(jim);
+        Jim_Scope *scope = jim_current_scope(jim);
         if (scope) {
             scope->tail = 1;
             scope->key = 0;
@@ -161,10 +161,10 @@ const char *jim_error_string(Jim_Error error)
         return "There is no error. The developer of this software just had a case of \"Task failed successfully\" https://i.imgur.com/Bdb3rkq.jpg - Please contact the developer and tell them that they are very lazy for not checking errors properly.";
     case JIM_WRITE_ERROR:
         return "Write error";
-    case JIM_STACK_OVERFLOW:
-        return "Stack Overflow";
-    case JIM_STACK_UNDERFLOW:
-        return "Stack Underflow";
+    case JIM_SCOPES_OVERFLOW:
+        return "Stack of Scopes Overflow";
+    case JIM_SCOPES_UNDERFLOW:
+        return "Stack of Scopes Underflow";
     case JIM_OUT_OF_SCOPE_KEY:
         return "Out of Scope key";
     case JIM_DOUBLE_KEY:
@@ -316,7 +316,7 @@ void jim_array_begin(Jim *jim)
     if (jim->error == JIM_OK) {
         jim_element_begin(jim);
         jim_write_cstr(jim, "[");
-        jim_stack_push(jim, JIM_ARRAY_SCOPE);
+        jim_scope_push(jim, JIM_ARRAY_SCOPE);
     }
 }
 
@@ -325,7 +325,7 @@ void jim_array_end(Jim *jim)
 {
     if (jim->error == JIM_OK) {
         jim_write_cstr(jim, "]");
-        jim_stack_pop(jim);
+        jim_scope_pop(jim);
         jim_element_end(jim);
     }
 }
@@ -335,7 +335,7 @@ void jim_object_begin(Jim *jim)
     if (jim->error == JIM_OK) {
         jim_element_begin(jim);
         jim_write_cstr(jim, "{");
-        jim_stack_push(jim, JIM_OBJECT_SCOPE);
+        jim_scope_push(jim, JIM_OBJECT_SCOPE);
     }
 }
 
@@ -343,7 +343,7 @@ void jim_member_key(Jim *jim, const char *str, const unsigned int *size)
 {
     if (jim->error == JIM_OK) {
         jim_element_begin(jim);
-        Jim_Scope *scope = jim_stack_top(jim);
+        Jim_Scope *scope = jim_current_scope(jim);
         if (scope && scope->kind == JIM_OBJECT_SCOPE) {
             if (!scope->key) {
                 jim_string_no_element(jim, str, size);
@@ -362,7 +362,7 @@ void jim_object_end(Jim *jim)
 {
     if (jim->error == JIM_OK) {
         jim_write_cstr(jim, "}");
-        jim_stack_pop(jim);
+        jim_scope_pop(jim);
         jim_element_end(jim);
     }
 }
