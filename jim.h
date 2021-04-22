@@ -19,7 +19,13 @@ typedef enum {
 
 const char *jim_error_string(Jim_Error error);
 
+typedef enum {
+    JIM_ARRAY_SCOPE,
+    JIM_OBJECT_SCOPE,
+} Jim_Scope_Kind;
+
 typedef struct {
+    Jim_Scope_Kind kind;
     int tail;
     int key;
 } Jim_Scope;
@@ -61,10 +67,11 @@ static size_t jim_strlen(const char *s)
     return count;
 }
 
-static void jim_stack_push(Jim *jim)
+static void jim_stack_push(Jim *jim, Jim_Scope_Kind kind)
 {
     if (jim->error == JIM_OK) {
         if (jim->stack_size < JIM_STACK_CAPACITY) {
+            jim->stack[jim->stack_size].kind = kind;
             jim->stack[jim->stack_size].tail = 0;
             jim->stack[jim->stack_size].key = 0;
             jim->stack_size += 1;
@@ -309,7 +316,7 @@ void jim_array_begin(Jim *jim)
     if (jim->error == JIM_OK) {
         jim_element_begin(jim);
         jim_write_cstr(jim, "[");
-        jim_stack_push(jim);
+        jim_stack_push(jim, JIM_ARRAY_SCOPE);
     }
 }
 
@@ -328,17 +335,16 @@ void jim_object_begin(Jim *jim)
     if (jim->error == JIM_OK) {
         jim_element_begin(jim);
         jim_write_cstr(jim, "{");
-        jim_stack_push(jim);
+        jim_stack_push(jim, JIM_OBJECT_SCOPE);
     }
 }
 
 void jim_member_key(Jim *jim, const char *str, const unsigned int *size)
 {
-    // TODO(#3): jim_member_key does not throw an error when used inside of array scope instead of object scope
     if (jim->error == JIM_OK) {
         jim_element_begin(jim);
         Jim_Scope *scope = jim_stack_top(jim);
-        if (scope) {
+        if (scope && scope->kind == JIM_OBJECT_SCOPE) {
             if (!scope->key) {
                 jim_string_no_element(jim, str, size);
                 jim_write_cstr(jim, ":");
