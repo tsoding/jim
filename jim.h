@@ -148,7 +148,7 @@ void jim_element_end(Jim *jim)
 
 const char *jim_error_string(Jim_Error error)
 {
-    // TODO: error strings are not particularly useful
+    // TODO(#1): error strings are not particularly useful
     switch (error) {
     case JIM_OK:
         return "There is no error. The developer of this software just had a case of \"Task failed successfully\" https://i.imgur.com/Bdb3rkq.jpg - Please contact the developer and tell them that they are very lazy for not checking errors properly.";
