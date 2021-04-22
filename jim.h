@@ -231,7 +231,7 @@ void jim_integer(Jim *jim, long long int x)
 
 void jim_float(Jim *jim, double x, int precision)
 {
-    // TODO: jim_float does not support NaN and Inf-s
+    // TODO(#2): jim_float does not support NaN and Inf-s
     if (jim->error == JIM_OK) {
         jim_element_begin(jim);
 
