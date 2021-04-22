@@ -29,9 +29,14 @@ int main()
 
         jim_member_key(&jim, "floats", NULL);
         jim_array_begin(&jim);
+            jim_float(&jim, 0.0, 4);
+            jim_float(&jim, -0.0, 4);
             jim_float(&jim, 3.1415, 4);
             jim_float(&jim, 2.71828, 5);
             jim_float(&jim, 1.6180, 4);
+            jim_float(&jim, 0.0 / 0.0, 4);
+            jim_float(&jim, 1.0 / 0.0, 4);
+            jim_float(&jim, -1.0 / 0.0, 4);
         jim_array_end(&jim);
 
         jim_member_key(&jim, "string", NULL);

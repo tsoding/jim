@@ -229,26 +229,35 @@ void jim_integer(Jim *jim, long long int x)
     }
 }
 
+static int is_nan_or_inf(double x)
+{
+    unsigned long long int mask = (1ULL << 11ULL) - 1ULL;
+    return (((*(unsigned long long int*) &x) >> 52ULL) & mask) == mask;
+}
+
 void jim_float(Jim *jim, double x, int precision)
 {
-    // TODO(#2): jim_float does not support NaN and Inf-s
     if (jim->error == JIM_OK) {
-        jim_element_begin(jim);
+        if (is_nan_or_inf(x)) {
+            jim_null(jim);
+        } else {
+            jim_element_begin(jim);
 
-        jim_integer_no_element(jim, (long long int) x);
-        x -= (double) (long long int) x;
-        while (precision-- > 0) {
-            x *= 10.0;
+            jim_integer_no_element(jim, (long long int) x);
+            x -= (double) (long long int) x;
+            while (precision-- > 0) {
+                x *= 10.0;
+            }
+            jim_write_cstr(jim, ".");
+
+            long long int y = (long long int) x;
+            if (y < 0) {
+                y = -y;
+            }
+            jim_integer_no_element(jim, y);
+
+            jim_element_end(jim);
         }
-        jim_write_cstr(jim, ".");
-
-        long long int y = (long long int) x;
-        if (y < 0) {
-            y = -y;
-        }
-        jim_integer_no_element(jim, y);
-
-        jim_element_end(jim);
     }
 }
 
