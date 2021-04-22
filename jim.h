@@ -2,7 +2,7 @@
 #define JIM_H_
 
 #ifndef JIM_STACK_CAPACITY
-#define JIM_STACK_CAPACITY 1024
+#define JIM_STACK_CAPACITY 128
 #endif // JIM_STACK_CAPACITY
 
 typedef void* Jim_Sink;
