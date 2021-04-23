@@ -16,6 +16,7 @@ jobs:
   build-linux-clang:
     runs-on: ubuntu-18.04
     steps:
+      - uses: actions/checkout@v1
       - name: build all and examples
         run: |
           make -k
