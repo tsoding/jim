@@ -93,6 +93,19 @@ $ ./example | jq .
 }
 ```
 
+## Testing
+
+```console
+$ make
+$ ./test
+```
+
+The expected outputs of the test cases are stored in [./test_expected.h](./test_expected.h). To regenerate it just run:
+
+```console
+$ ./test record
+```
+
 ## Notes
 
 1. Does not depends on libc. Could be theoretically used in embedded, but I know nothing about embedded, so maybe not.
