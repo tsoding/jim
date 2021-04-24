@@ -43,79 +43,85 @@ static Buffer buffer = {
     .data = static_memory_for_buffer
 };
 
-void case_01(Jim *jim)
+void null_case(Jim *jim)
 {
-    jim_object_begin(jim);
-    {
-        jim_member_key(jim, "keys", NULL);
-        jim_array_begin(jim);
-        {
-            for (int key = 0; key < 10; ++key) {
-                jim_integer(jim, key);
-            }
-        }
-        jim_array_end(jim);
-
-        jim_member_key(jim, "names", NULL);
-        jim_array_begin(jim);
-        {
-            jim_string(jim, "foo", NULL);
-            jim_string(jim, "bar", NULL);
-            jim_string(jim, "baz", NULL);
-        }
-        jim_array_end(jim);
-    }
-    jim_object_end(jim);
+    jim_array_begin(jim);
+    jim_null(jim);
+    jim_array_end(jim);
 }
 
-void case_02(Jim *jim)
+void bool_case(Jim *jim)
 {
-    jim_object_begin(jim);
-    {
-        jim_member_key(jim, "null", NULL);
-        jim_null(jim);
+    jim_array_begin(jim);
+    jim_bool(jim, 0);
+    jim_bool(jim, 1);
+    jim_array_end(jim);
+}
 
-        jim_member_key(jim, "bool", NULL);
-        jim_array_begin(jim);
-        {
-            jim_bool(jim, 0);
-            jim_bool(jim, 1);
-        }
-        jim_array_end(jim);
-
-        jim_member_key(jim, "integers", NULL);
-        jim_array_begin(jim);
-        {
-            for (int i = -3; i <= 3; ++i) {
-                jim_integer(jim, i);
-            }
-        }
-        jim_array_end(jim);
-
-        jim_member_key(jim, "floats", NULL);
-        jim_array_begin(jim);
-        {
-            jim_float(jim, 0.0, 4);
-            jim_float(jim, -0.0, 4);
-            jim_float(jim, 3.1415, 4);
-            jim_float(jim, 2.71828, 5);
-            jim_float(jim, 1.6180, 4);
-            jim_float(jim, 0.0 / 0.0, 4);
-            jim_float(jim, 1.0 / 0.0, 4);
-            jim_float(jim, -1.0 / 0.0, 4);
-        }
-        jim_array_end(jim);
-
-        jim_member_key(jim, "string", NULL);
-        jim_array_begin(jim);
-        {
-            jim_string(jim, "Hello\tWorld\n", NULL);
-            unsigned int size = 4;
-            jim_string(jim, "\0\0\0\0", &size);
-        }
-        jim_array_end(jim);
+void integer_case(Jim *jim)
+{
+    jim_array_begin(jim);
+    for (int i = -10; i <= 10; ++i) {
+        jim_integer(jim, i);
     }
-    jim_object_end(jim);
+    jim_array_end(jim);
+}
+
+void float_case(Jim *jim)
+{
+    jim_array_begin(jim);
+    jim_float(jim, 0.0, 4);
+    jim_float(jim, -0.0, 4);
+    jim_float(jim, 3.1415, 4);
+    jim_float(jim, 2.71828, 5);
+    jim_float(jim, 1.6180, 1);
+    jim_float(jim, 0.0 / 0.0, 4);
+    jim_float(jim, 1.0 / 0.0, 4);
+    jim_float(jim, -1.0 / 0.0, 4);
+    jim_array_end(jim);
+}
+
+void string_case(Jim *jim)
+{
+    jim_array_begin(jim);
+    jim_string(jim, "hello", NULL);
+    jim_string(jim, "world", NULL);
+    jim_string(jim, "\n\b\t", NULL);
+    const unsigned int size = 4;
+    jim_string(jim, "\0\0\0\0", &size);
+    jim_array_end(jim);
+}
+
+void array_case(Jim *jim)
+{
+    jim_array_begin(jim);
+
+    for (int n = 1; n <= 5; ++n) {
+        for (int i = 0; i < n; ++i) jim_array_begin(jim);
+        for (int i = 0; i < n; ++i) jim_array_end(jim);
+    }
+
+    jim_array_end(jim);
+}
+
+void object_case_rec(Jim *jim, int level, int *counter)
+{
+    if (level < 3) {
+        jim_object_begin(jim);
+        jim_member_key(jim, "l", NULL);
+        object_case_rec(jim, level + 1, counter);
+        jim_member_key(jim, "r", NULL);
+        object_case_rec(jim, level + 1, counter);
+        jim_object_end(jim);
+    } else {
+        jim_integer(jim, (*counter)++);
+    }
+}
+
+void object_case(Jim *jim)
+{
+    int counter = 0;
+    object_case_rec(jim, 0, &counter);
 }
 
 typedef struct {
@@ -130,8 +136,13 @@ typedef struct {
     }
 
 const Test_Case test_cases[] = {
-    TEST_CASE(case_01),
-    TEST_CASE(case_02)
+    TEST_CASE(null_case),
+    TEST_CASE(bool_case),
+    TEST_CASE(integer_case),
+    TEST_CASE(float_case),
+    TEST_CASE(string_case),
+    TEST_CASE(array_case),
+    TEST_CASE(object_case),
 };
 
 void record(const char *header_path)
