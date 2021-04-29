@@ -11,23 +11,23 @@ int main()
     };
 
     jim_object_begin(&jim);
-        jim_member_key(&jim, "null", NULL);
+        jim_member_key(&jim, "null");
         jim_null(&jim);
 
-        jim_member_key(&jim, "bool", NULL);
+        jim_member_key(&jim, "bool");
         jim_array_begin(&jim);
             jim_bool(&jim, 0);
             jim_bool(&jim, 1);
         jim_array_end(&jim);
 
-        jim_member_key(&jim, "integers", NULL);
+        jim_member_key(&jim, "integers");
         jim_array_begin(&jim);
             for (int i = -3; i <= 3; ++i) {
                 jim_integer(&jim, i);
             }
         jim_array_end(&jim);
 
-        jim_member_key(&jim, "floats", NULL);
+        jim_member_key(&jim, "floats");
         jim_array_begin(&jim);
             jim_float(&jim, 0.0, 4);
             jim_float(&jim, -0.0, 4);
@@ -39,11 +39,10 @@ int main()
             jim_float(&jim, -1.0 / 0.0, 4);
         jim_array_end(&jim);
 
-        jim_member_key(&jim, "string", NULL);
+        jim_member_key(&jim, "string");
         jim_array_begin(&jim);
-            jim_string(&jim, "Hello\tWorld\n", NULL);
-            unsigned int size = 4;
-            jim_string(&jim, "\0\0\0\0", &size);
+            jim_string(&jim, "Hello\tWorld\n");
+            jim_string_sized(&jim, "\0\0\0\0", 4);
         jim_array_end(&jim);
     jim_object_end(&jim);
 
