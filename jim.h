@@ -42,7 +42,8 @@ void jim_null(Jim *jim);
 void jim_bool(Jim *jim, int boolean);
 void jim_integer(Jim *jim, long long int x);
 void jim_float(Jim *jim, double x, int precision);
-void jim_string(Jim *jim, const char *str, const unsigned int *size);
+void jim_string(Jim *jim, const char *str);
+void jim_string_sized(Jim *jim, const char *str, size_t size);
 
 void jim_element_begin(Jim *jim);
 void jim_element_end(Jim *jim);
@@ -51,7 +52,8 @@ void jim_array_begin(Jim *jim);
 void jim_array_end(Jim *jim);
 
 void jim_object_begin(Jim *jim);
-void jim_member_key(Jim *jim, const char *str, const unsigned int *size);
+void jim_member_key(Jim *jim, const char *str);
+void jim_member_key_sized(Jim *jim, const char *str, size_t size);
 void jim_object_end(Jim *jim);
 
 #endif // JIM_H_
@@ -268,13 +270,13 @@ void jim_float(Jim *jim, double x, int precision)
     }
 }
 
-static void jim_string_no_element(Jim *jim, const char *str, const unsigned int *size)
+static void jim_string_sized_no_element(Jim *jim, const char *str, size_t size)
 {
     if (jim->error == JIM_OK) {
         const char *hex_digits = "0123456789abcdef";
         const char *specials = "btnvfr";
         const char *p = str;
-        size_t len = size ? *size : jim_strlen(str);
+        size_t len = size;
 
         jim_write_cstr(jim, "\"");
         size_t cl;
@@ -302,12 +304,19 @@ static void jim_string_no_element(Jim *jim, const char *str, const unsigned int 
     }
 }
 
-void jim_string(Jim *jim, const char *str, const unsigned int *size)
+void jim_string_sized(Jim *jim, const char *str, size_t size)
 {
     if (jim->error == JIM_OK) {
         jim_element_begin(jim);
-        jim_string_no_element(jim, str, size);
+        jim_string_sized_no_element(jim, str, size);
         jim_element_end(jim);
+    }
+}
+
+void jim_string(Jim *jim, const char *str)
+{
+    if (jim->error == JIM_OK) {
+        jim_string_sized(jim, str, jim_strlen(str));
     }
 }
 
@@ -339,14 +348,21 @@ void jim_object_begin(Jim *jim)
     }
 }
 
-void jim_member_key(Jim *jim, const char *str, const unsigned int *size)
+void jim_member_key(Jim *jim, const char *str)
+{
+    if (jim->error == JIM_OK) {
+        jim_member_key_sized(jim, str, jim_strlen(str));
+    }
+}
+
+void jim_member_key_sized(Jim *jim, const char *str, size_t size)
 {
     if (jim->error == JIM_OK) {
         jim_element_begin(jim);
         Jim_Scope *scope = jim_current_scope(jim);
         if (scope && scope->kind == JIM_OBJECT_SCOPE) {
             if (!scope->key) {
-                jim_string_no_element(jim, str, size);
+                jim_string_sized_no_element(jim, str, size);
                 jim_write_cstr(jim, ":");
                 scope->key = 1;
             } else {

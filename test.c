@@ -84,11 +84,10 @@ void float_case(Jim *jim)
 void string_case(Jim *jim)
 {
     jim_array_begin(jim);
-    jim_string(jim, "hello", NULL);
-    jim_string(jim, "world", NULL);
-    jim_string(jim, "\n\b\t", NULL);
-    const unsigned int size = 4;
-    jim_string(jim, "\0\0\0\0", &size);
+    jim_string(jim, "hello");
+    jim_string(jim, "world");
+    jim_string(jim, "\n\b\t");
+    jim_string_sized(jim, "\0\0\0\0", 4);
     jim_array_end(jim);
 }
 
@@ -108,9 +107,9 @@ void object_case_rec(Jim *jim, int level, int *counter)
 {
     if (level < 3) {
         jim_object_begin(jim);
-        jim_member_key(jim, "l", NULL);
+        jim_member_key(jim, "l");
         object_case_rec(jim, level + 1, counter);
-        jim_member_key(jim, "r", NULL);
+        jim_member_key(jim, "r");
         object_case_rec(jim, level + 1, counter);
         jim_object_end(jim);
     } else {
@@ -164,8 +163,7 @@ void record(const char *header_path)
         buffer_clean(&buffer);
         test_cases[i].run(&jim_buffer);
         fprintf(stream, "    ");
-        const unsigned int size = buffer.size;
-        jim_string(&jim_stream, buffer.data, &size);
+        jim_string_sized(&jim_stream, buffer.data, buffer.size);
         fprintf(stream, ",\n");
     }
     fprintf(stream, "};\n");
