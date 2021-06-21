@@ -337,6 +337,11 @@ void jim_array_end(Jim *jim)
 {
     if (jim->error == JIM_OK) {
         Jim_Scope *scope = jim_current_scope(jim);
+        if (!scope) {
+            jim->error = JIM_SCOPES_UNDERFLOW;
+            return;
+        }
+
         if (scope->kind != JIM_ARRAY_SCOPE) {
             jim->error = JIM_SCOPE_MISMATCH;
             return;
@@ -387,6 +392,11 @@ void jim_object_end(Jim *jim)
 {
     if (jim->error == JIM_OK) {
         Jim_Scope *scope = jim_current_scope(jim);
+        if (!scope) {
+            jim->error = JIM_SCOPES_UNDERFLOW;
+            return;
+        }
+
         if (scope->kind != JIM_OBJECT_SCOPE) {
             jim->error = JIM_SCOPE_MISMATCH;
             return;
