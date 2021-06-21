@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #define JIM_IMPLEMENTATION
-#include "./jim.h"
+#include "../jim.h"
 
 int main()
 {
