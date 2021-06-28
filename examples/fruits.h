@@ -2,6 +2,7 @@
 #define FRUITS_H_
 
 // What? This is just a list of fruits. What did you expect?
+// Source: https://gist.github.com/lasagnaphil/7667eaeddb6ed0c565f0cb653d756942
 
 const char *fruits[] = {
     "Apple",
