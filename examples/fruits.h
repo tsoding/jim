@@ -100,4 +100,6 @@ const char *fruits[] = {
 };
 const size_t fruits_count = sizeof(fruits) / sizeof(fruits[0]);
 
+// Source: https://gist.github.com/lasagnaphil/7667eaeddb6ed0c565f0cb653d756942
+
 #endif // FRUITS_H_
