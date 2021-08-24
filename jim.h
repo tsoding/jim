@@ -25,9 +25,9 @@ typedef enum {
 } Jim_Scope_Kind;
 
 typedef struct {
-    Jim_Scope_Kind kind;
-    int tail;
-    int key;
+    unsigned char kind : 6;
+    unsigned char tail : 1;
+    unsigned char key : 1;
 } Jim_Scope;
 
 typedef struct {

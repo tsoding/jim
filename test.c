@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #define JIM_IMPLEMENTATION
 #include "./jim.h"
@@ -202,6 +203,8 @@ void test(void)
 
 int main(int argc, char **argv)
 {
+    assert(sizeof(Jim_Scope) == 1);
+
     if (argc >= 2) {
         if (strcmp(argv[1], "record") == 0) {
             record("test_expected.h");
