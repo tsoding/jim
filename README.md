@@ -9,7 +9,7 @@ Immediate Mode JSON Serialization Library in C. Similar to [imgui](https://githu
 ```c
 #include <stdio.h>
 
-#define JIM_IMPLEMENTATION
+#define JIMPLEMENTATION
 #include "./jim.h"
 
 int main()

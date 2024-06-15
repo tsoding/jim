@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#define JIM_IMPLEMENTATION
+#define JIMPLEMENTATION
 #include "../jim.h"
 
 int main()

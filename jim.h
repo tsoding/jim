@@ -58,7 +58,7 @@ void jim_object_end(Jim *jim);
 
 #endif // JIM_H_
 
-#ifdef JIM_IMPLEMENTATION
+#ifdef JIMPLEMENTATION
 
 static size_t jim_strlen(const char *s)
 {
@@ -383,4 +383,4 @@ void jim_object_end(Jim *jim)
     }
 }
 
-#endif // JIM_IMPLEMENTATION
+#endif // JIMPLEMENTATION
