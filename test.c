@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define JIM_IMPLEMENTATION
+#define JIMPLEMENTATION
 #include "./jim.h"
 
 #include "./test_expected.h"

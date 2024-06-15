@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define JIM_IMPLEMENTATION
+#define JIMPLEMENTATION
 #include "../jim.h"
 
 #include "fruits.h"
