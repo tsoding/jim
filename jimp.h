@@ -5,7 +5,7 @@
 
 typedef struct {
     stb_lexer l;
-    const char *path;
+    const char *file_path;
     const char *member;
 } Jimp;
 
@@ -97,7 +97,7 @@ void jimp_unknown_member(Jimp *jimp)
 {
     stb_lex_location loc = {0};
     stb_c_lexer_get_location(&jimp->l, jimp->l.where_firstchar, &loc);
-    fprintf(stderr, "%s:%d:%d: ERROR: Unexpected member `%s`\n", jimp->path, loc.line_number, loc.line_offset + 1, jimp->member);
+    fprintf(stderr, "%s:%d:%d: ERROR: Unexpected member `%s`\n", jimp->file_path, loc.line_number, loc.line_offset + 1, jimp->member);
 }
 
 bool jimp_object_begin(Jimp *jimp)
@@ -147,7 +147,7 @@ bool jimp_bool(Jimp *jimp, bool *boolean)
     } else {
         stb_lex_location loc = {0};
         stb_c_lexer_get_location(&jimp->l, jimp->l.where_firstchar, &loc);
-        fprintf(stderr, "%s:%d:%d: ERROR: Expected boolean but got `%s`\n", jimp->path, loc.line_number, loc.line_offset + 1, jimp_token_kind(jimp->l.token));
+        fprintf(stderr, "%s:%d:%d: ERROR: Expected boolean but got `%s`\n", jimp->file_path, loc.line_number, loc.line_offset + 1, jimp_token_kind(jimp->l.token));
         return false;
     }
     return true;
@@ -172,7 +172,7 @@ bool jimp_expect_token(Jimp *jimp, long token)
     if (jimp->l.token != token) {
         stb_lex_location loc = {0};
         stb_c_lexer_get_location(&jimp->l, jimp->l.where_firstchar, &loc);
-        fprintf(stderr, "%s:%d:%d: ERROR: expected %s, but got %s\n", jimp->path, loc.line_number, loc.line_offset + 1, jimp_token_kind(token), jimp_token_kind(jimp->l.token));
+        fprintf(stderr, "%s:%d:%d: ERROR: expected %s, but got %s\n", jimp->file_path, loc.line_number, loc.line_offset + 1, jimp_token_kind(token), jimp_token_kind(jimp->l.token));
         return false;
     }
     return true;

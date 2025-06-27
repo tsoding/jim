@@ -68,16 +68,16 @@ typedef struct {
 
 int main()
 {
-    const char *path = "profile.json";
+    const char *file_path = "profile.json";
     // const char *path = "numbers.json";
     // const char *path = "profiles.json";
     // const char *path = "empty.json";
     // const char *path = "one.json";
     // const char *path = "database.json";
     String_Builder sb = {0};
-    if (!read_entire_file(path, &sb)) return 1;
+    if (!read_entire_file(file_path, &sb)) return 1;
     Jimp jimp = {
-        .path = path,
+        .file_path = file_path,
     };
     static char string_store[1024];
     stb_c_lexer_init(&jimp.l, sb.items, sb.items + sb.count, string_store, sizeof(string_store));
