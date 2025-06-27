@@ -23,13 +23,13 @@ bool parse_person(Jimp *jimp, Person *p)
 {
     if (!jimp_object_begin(jimp)) return false;
     while (jimp_object_member(jimp)) {
-        if (strcmp(jimp->key, "name") == 0) {
+        if (strcmp(jimp->member, "name") == 0) {
             if (!jimp_string(jimp, &p->name))       return false;
-        } else if (strcmp(jimp->key, "age") == 0) {
+        } else if (strcmp(jimp->member, "age") == 0) {
             if (!jimp_number(jimp, &p->age))        return false;
-        } else if (strcmp(jimp->key, "location") == 0) {
+        } else if (strcmp(jimp->member, "location") == 0) {
             if (!jimp_string(jimp, &p->location))   return false;
-        } else if (strcmp(jimp->key, "body_count") == 0) {
+        } else if (strcmp(jimp->member, "body_count") == 0) {
             if (!jimp_number(jimp, &p->body_count)) return false;
         } else {
             jimp_unknown_member(jimp);

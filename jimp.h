@@ -6,7 +6,7 @@
 typedef struct {
     stb_lexer l;
     const char *path;
-    const char *key;
+    const char *member;
 } Jimp;
 
 bool jimp_bool(Jimp *jimp, bool *boolean);
@@ -97,7 +97,7 @@ void jimp_unknown_member(Jimp *jimp)
 {
     stb_lex_location loc = {0};
     stb_c_lexer_get_location(&jimp->l, jimp->l.where_firstchar, &loc);
-    fprintf(stderr, "%s:%d:%d: ERROR: Unexpected member `%s`\n", jimp->path, loc.line_number, loc.line_offset + 1, jimp->key);
+    fprintf(stderr, "%s:%d:%d: ERROR: Unexpected member `%s`\n", jimp->path, loc.line_number, loc.line_offset + 1, jimp->member);
 }
 
 bool jimp_object_begin(Jimp *jimp)
@@ -111,7 +111,7 @@ bool jimp_object_member(Jimp *jimp)
     if (!stb_c_lexer_get_token(&jimp->l)) return false;
     if (jimp->l.token == ',') {
         if (!jimp_get_and_expect_token(jimp, CLEX_dqstring)) return false;
-        jimp->key = strdup(jimp->l.string); // TODO: memory leak
+        jimp->member = strdup(jimp->l.string); // TODO: memory leak
         if (!jimp_get_and_expect_token(jimp, ':')) return false;
         return true;
     }
@@ -120,7 +120,7 @@ bool jimp_object_member(Jimp *jimp)
         return false;
     }
     if (!jimp_expect_token(jimp, CLEX_dqstring)) return false;
-    jimp->key = strdup(jimp->l.string); // TODO: memory leak
+    jimp->member = strdup(jimp->l.string); // TODO: memory leak
     if (!jimp_get_and_expect_token(jimp, ':')) return false;
     return true;
 }
