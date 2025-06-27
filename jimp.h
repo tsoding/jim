@@ -9,16 +9,18 @@ typedef struct {
     const char *member;
 } Jimp;
 
+// TODO: how do null-s fit into this entire system?
 bool jimp_bool(Jimp *jimp, bool *boolean);
 bool jimp_number(Jimp *jimp, long *number);
+// TODO: support for floats
 bool jimp_string(Jimp *jimp, const char **string);
 bool jimp_object_begin(Jimp *jimp);
 bool jimp_object_member(Jimp *jimp);
 bool jimp_object_end(Jimp *jimp);
 void jimp_unknown_member(Jimp *jimp);
 bool jimp_array_begin(Jimp *jimp);
+bool jimp_array_item(Jimp *jimp);
 bool jimp_array_end(Jimp *jimp);
-bool jimp_array_has_items(Jimp *jimp);
 
 // TODO: should be private
 bool jimp_expect_token(Jimp *jimp, long token);
@@ -80,7 +82,7 @@ bool jimp_array_end(Jimp *jimp)
     return jimp_get_and_expect_token(jimp, ']');
 }
 
-bool jimp_array_has_items(Jimp *jimp)
+bool jimp_array_item(Jimp *jimp)
 {
     char *point = jimp->l.parse_point;
     if (!stb_c_lexer_get_token(&jimp->l)) return false;
