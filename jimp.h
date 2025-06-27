@@ -22,6 +22,7 @@ void jimp_unknown_member(Jimp *jimp);
 bool jimp_array_begin(Jimp *jimp);
 bool jimp_array_item(Jimp *jimp);
 bool jimp_array_end(Jimp *jimp);
+void jimp_diagf(Jimp *jimp, const char *fmt, ...);
 
 #endif // JIMP_H_
 
@@ -30,6 +31,17 @@ bool jimp_array_end(Jimp *jimp);
 static bool jimp__expect_token(Jimp *jimp, long token);
 static bool jimp__get_and_expect_token(Jimp *jimp, long token);
 static const char *jimp__token_kind(long token);
+
+void jimp_diagf(Jimp *jimp, const char *fmt, ...)
+{
+    stb_lex_location loc = {0};
+    stb_c_lexer_get_location(&jimp->l, jimp->l.where_firstchar, &loc);
+    fprintf(stderr, "%s:%d:%d: ", jimp->file_path, loc.line_number, loc.line_offset + 1);
+    va_list args;
+    va_start(args, fmt);
+    vfprintf(stderr, fmt, args);
+    va_end(args);
+}
 
 static const char *jimp__token_kind(long token)
 {
@@ -97,9 +109,7 @@ bool jimp_array_item(Jimp *jimp)
 
 void jimp_unknown_member(Jimp *jimp)
 {
-    stb_lex_location loc = {0};
-    stb_c_lexer_get_location(&jimp->l, jimp->l.where_firstchar, &loc);
-    fprintf(stderr, "%s:%d:%d: ERROR: Unexpected member `%s`\n", jimp->file_path, loc.line_number, loc.line_offset + 1, jimp->member);
+    jimp_diagf(jimp, "ERROR: Unexpected object member `%s`\n", jimp->member);
 }
 
 bool jimp_object_begin(Jimp *jimp)
@@ -147,9 +157,7 @@ bool jimp_bool(Jimp *jimp, bool *boolean)
     } else if (strcmp(jimp->l.string, "false") == 0) {
         *boolean = false;
     } else {
-        stb_lex_location loc = {0};
-        stb_c_lexer_get_location(&jimp->l, jimp->l.where_firstchar, &loc);
-        fprintf(stderr, "%s:%d:%d: ERROR: Expected boolean but got `%s`\n", jimp->file_path, loc.line_number, loc.line_offset + 1, jimp__token_kind(jimp->l.token));
+        jimp_diagf(jimp, "ERROR: Expected boolean but got `%s`\n", jimp__token_kind(jimp->l.token));
         return false;
     }
     return true;
@@ -172,9 +180,7 @@ static bool jimp__get_and_expect_token(Jimp *jimp, long token)
 static bool jimp__expect_token(Jimp *jimp, long token)
 {
     if (jimp->l.token != token) {
-        stb_lex_location loc = {0};
-        stb_c_lexer_get_location(&jimp->l, jimp->l.where_firstchar, &loc);
-        fprintf(stderr, "%s:%d:%d: ERROR: expected %s, but got %s\n", jimp->file_path, loc.line_number, loc.line_offset + 1, jimp__token_kind(token), jimp__token_kind(jimp->l.token));
+        jimp_diagf(jimp, "ERROR: expected %s, but got %s\n", jimp__token_kind(token), jimp__token_kind(jimp->l.token));
         return false;
     }
     return true;

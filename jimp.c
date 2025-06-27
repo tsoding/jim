@@ -92,7 +92,7 @@ int main()
             if (!jimp_array_begin(&jimp)) return 1;
             while (jimp_array_item(&jimp)) {
                 long x = 0;
-                jimp_number(&jimp, &x);
+                if (!jimp_number(&jimp, &x)) return 1;
                 da_append(&xs, x);
             }
             if (!jimp_array_end(&jimp)) return 1;
