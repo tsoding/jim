@@ -5,6 +5,8 @@
 #define JIM_SCOPES_CAPACITY 128
 #endif // JIM_SCOPES_CAPACITY
 
+#include <stddef.h>
+
 typedef void* Jim_Sink;
 typedef size_t (*Jim_Write)(const void *ptr, size_t size, size_t nmemb, Jim_Sink sink);
 
