@@ -1,4 +1,4 @@
-CFLAGS=-Wall -Wextra -Wswitch-enum -std=c99 -pedantic -ggdb
+CFLAGS=-Wall -Wextra -Wswitch-enum -ggdb
 
 .PHONY: all
 all: examples test
