@@ -215,7 +215,8 @@ static const char *jimp__token_kind(Jimp_Token token)
    case JIMP_STRING:   return "string";
    case JIMP_NUMBER:   return "number";
    }
-   return temp_sprintf("<<UNKNOWN: %u>>", token);
+   assert(0 && "unreachable");
+   return NULL;
 }
 
 bool jimp_array_begin(Jimp *jimp)
