@@ -16,6 +16,7 @@ typedef enum {
     JIM_SCOPES_OVERFLOW,
     JIM_SCOPES_UNDERFLOW,
     JIM_OUT_OF_SCOPE_KEY,
+    JIM_SCOPE_MISMATCH,
     JIM_DOUBLE_KEY
 } Jim_Error;
 
@@ -171,6 +172,8 @@ const char *jim_error_string(Jim_Error error)
         return "Stack of Scopes Underflow";
     case JIM_OUT_OF_SCOPE_KEY:
         return "Out of Scope key";
+    case JIM_SCOPE_MISMATCH:
+        return "Scope mismatch";
     case JIM_DOUBLE_KEY:
         return "Tried to set the member key twice";
     default:
@@ -335,6 +338,17 @@ void jim_array_begin(Jim *jim)
 void jim_array_end(Jim *jim)
 {
     if (jim->error == JIM_OK) {
+        Jim_Scope *scope = jim_current_scope(jim);
+        if (!scope) {
+            jim->error = JIM_SCOPES_UNDERFLOW;
+            return;
+        }
+
+        if (scope->kind != JIM_ARRAY_SCOPE) {
+            jim->error = JIM_SCOPE_MISMATCH;
+            return;
+        }
+
         jim_write_cstr(jim, "]");
         jim_scope_pop(jim);
         jim_element_end(jim);
@@ -379,6 +393,17 @@ void jim_member_key_sized(Jim *jim, const char *str, size_t size)
 void jim_object_end(Jim *jim)
 {
     if (jim->error == JIM_OK) {
+        Jim_Scope *scope = jim_current_scope(jim);
+        if (!scope) {
+            jim->error = JIM_SCOPES_UNDERFLOW;
+            return;
+        }
+
+        if (scope->kind != JIM_OBJECT_SCOPE) {
+            jim->error = JIM_SCOPE_MISMATCH;
+            return;
+        }
+
         jim_write_cstr(jim, "}");
         jim_scope_pop(jim);
         jim_element_end(jim);
