@@ -2,6 +2,14 @@
 #ifndef JIMP_H_
 #define JIMP_H_
 
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <stdarg.h>
+#include <string.h>
+#include <ctype.h>
+
 // TODO: move all diagnostics reporting outside of the library
 //   So the user has more options on how to report things
 
