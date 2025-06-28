@@ -1,3 +1,4 @@
+// Prototype of an Immediate Deserialization idea.
 #ifndef JIMP_H_
 #define JIMP_H_
 
