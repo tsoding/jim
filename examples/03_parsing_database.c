@@ -24,13 +24,13 @@ bool parse_person(Jimp *jimp, Person *p)
     if (!jimp_object_begin(jimp)) return false;
     while (jimp_object_member(jimp)) {
         if (strcmp(jimp->member, "name") == 0) {
-            if (!jimp_string(jimp, &p->name))       return false;
+            if (!jimp_string(jimp, &p->name, NULL))       return false;
         } else if (strcmp(jimp->member, "age") == 0) {
-            if (!jimp_number(jimp, &p->age))        return false;
+            if (!jimp_number(jimp, &p->age, 0))        return false;
         } else if (strcmp(jimp->member, "location") == 0) {
-            if (!jimp_string(jimp, &p->location))   return false;
+            if (!jimp_string(jimp, &p->location, NULL))   return false;
         } else if (strcmp(jimp->member, "body_count") == 0) {
-            if (!jimp_number(jimp, &p->body_count)) return false;
+            if (!jimp_number(jimp, &p->body_count, 0)) return false;
         } else {
             jimp_unknown_member(jimp);
             return false;
@@ -93,7 +93,7 @@ int main()
             if (!jimp_array_begin(&jimp)) return 1;
             while (jimp_array_item(&jimp)) {
                 double x = 0;
-                if (!jimp_number(&jimp, &x)) return 1;
+                if (!jimp_number(&jimp, &x, 0)) return 1;
                 da_append(&xs, x);
             }
             if (!jimp_array_end(&jimp)) return 1;

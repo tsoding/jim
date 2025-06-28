@@ -50,12 +50,13 @@ typedef struct {
     double number;
 
     const char *member;
+    bool value_is_null;
 } Jimp;
 
 // TODO: how do null-s fit into this entire system?
-bool jimp_bool(Jimp *jimp, bool *boolean);
-bool jimp_number(Jimp *jimp, double *number);
-bool jimp_string(Jimp *jimp, const char **string);
+bool jimp_bool(Jimp *jimp, bool *boolean, bool defaultt);
+bool jimp_number(Jimp *jimp, double *number, double defaultt);
+bool jimp_string(Jimp *jimp, const char **string, const char*defaultt);
 bool jimp_object_begin(Jimp *jimp);
 bool jimp_object_member(Jimp *jimp);
 bool jimp_object_end(Jimp *jimp);
@@ -221,16 +222,29 @@ static const char *jimp__token_kind(Jimp_Token token)
 
 bool jimp_array_begin(Jimp *jimp)
 {
-    return jimp__get_and_expect_token(jimp, JIMP_OBRACKET);
+    if (!jimp__get_token(jimp)) return false;
+    if(jimp->token == JIMP_NULL) {
+        jimp->value_is_null = true;
+        return true;
+    } else if(jimp->token != JIMP_OBRACKET) {
+        jimp_diagf(jimp, "ERROR: expected `%s` or `%s`, but got `%s`\n", jimp__token_kind(JIMP_OBRACKET), jimp__token_kind(JIMP_NULL), jimp__token_kind(jimp->token));
+        return false;
+    }
+    return true;
 }
 
 bool jimp_array_end(Jimp *jimp)
 {
+    if(jimp->value_is_null) {
+        jimp->value_is_null = false;
+        return true;
+    }
     return jimp__get_and_expect_token(jimp, JIMP_CBRACKET);
 }
 
 bool jimp_array_item(Jimp *jimp)
 {
+    if(jimp->value_is_null) return false;
     const char *point = jimp->point;
     if (!jimp__get_token(jimp)) return false;
     if (jimp->token == JIMP_COMMA) return true;
@@ -249,11 +263,19 @@ void jimp_unknown_member(Jimp *jimp)
 
 bool jimp_object_begin(Jimp *jimp)
 {
-    return jimp__get_and_expect_token(jimp, JIMP_OCURLY);
+    if (!jimp__get_token(jimp)) return false;
+    if(jimp->token == JIMP_NULL) {
+        jimp->value_is_null = true;
+    } else if(jimp->token != JIMP_OCURLY) {
+        jimp_diagf(jimp, "ERROR: expected `%s` or `%s`, but got `%s`\n", jimp__token_kind(JIMP_OCURLY), jimp__token_kind(JIMP_NULL), jimp__token_kind(jimp->token));
+        return false;
+    }
+    return true;
 }
 
 bool jimp_object_member(Jimp *jimp)
 {
+    if(jimp->value_is_null) return false;
     const char *point = jimp->point;
     if (!jimp__get_token(jimp)) return false;
     if (jimp->token == JIMP_COMMA) {
@@ -274,33 +296,54 @@ bool jimp_object_member(Jimp *jimp)
 
 bool jimp_object_end(Jimp *jimp)
 {
+    if(jimp->value_is_null) {
+        jimp->value_is_null = false;
+        return true;
+    }
     return jimp__get_and_expect_token(jimp, JIMP_CCURLY);
 }
 
-bool jimp_string(Jimp *jimp, const char **string)
-{
-    if (!jimp__get_and_expect_token(jimp, JIMP_STRING)) return false;
-    *string = strdup(jimp->string);
-    return true;
-}
-
-bool jimp_bool(Jimp *jimp, bool *boolean)
+bool jimp_string(Jimp *jimp, const char **string, const char*defaultt)
 {
     if (!jimp__get_token(jimp)) return false;
-        *boolean = true;
-    } else if (jimp->token == JIMP_FALSE) {
-        *boolean = false;
+    if(jimp->token == JIMP_NULL) {
+        *string = defaultt;
+    } else if(jimp->token == JIMP_STRING) {
+        *string = strdup(jimp->string);
     } else {
-        jimp_diagf(jimp, "ERROR: expected boolean, but got `%s`\n", jimp__token_kind(jimp->token));
+        jimp_diagf(jimp, "ERROR: expected `%s` or `%s`, but got `%s`\n", jimp__token_kind(JIMP_STRING), jimp__token_kind(JIMP_NULL), jimp__token_kind(jimp->token));
         return false;
     }
     return true;
 }
 
-bool jimp_number(Jimp *jimp, double *number)
+bool jimp_bool(Jimp *jimp, bool *boolean, bool defaultt)
 {
-    if (!jimp__get_and_expect_token(jimp, JIMP_NUMBER)) return false;
-    *number = jimp->number;
+    if (!jimp__get_token(jimp)) return false;
+    if(jimp->token == JIMP_NULL) {
+        *boolean = defaultt;
+    } else if (jimp->token == JIMP_TRUE) {
+        *boolean = true;
+    } else if (jimp->token == JIMP_FALSE) {
+        *boolean = false;
+    } else {
+        jimp_diagf(jimp, "ERROR: expected boolean or `%s`, but got `%s`\n", jimp__token_kind(JIMP_NULL), jimp__token_kind(jimp->token));
+        return false;
+    }
+    return true;
+}
+
+bool jimp_number(Jimp *jimp, double *number, double defaultt)
+{
+    if (!jimp__get_token(jimp)) return false;
+    if(jimp->token == JIMP_NULL) {
+        *number = defaultt;
+    } else if(jimp->token == JIMP_NUMBER) {
+        *number = jimp->number;
+    } else {
+        jimp_diagf(jimp, "ERROR: expected `%s` or `%s`, but got `%s`\n", jimp__token_kind(JIMP_NUMBER), jimp__token_kind(JIMP_NULL), jimp__token_kind(jimp->token));
+        return false;
+    }
     return true;
 }
 
