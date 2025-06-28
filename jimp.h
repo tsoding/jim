@@ -53,7 +53,6 @@ typedef struct {
     bool value_is_null;
 } Jimp;
 
-// TODO: how do null-s fit into this entire system?
 bool jimp_bool(Jimp *jimp, bool *boolean, bool defaultt);
 bool jimp_number(Jimp *jimp, double *number, double defaultt);
 bool jimp_string(Jimp *jimp, const char **string, const char*defaultt);
