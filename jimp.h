@@ -52,10 +52,18 @@ typedef struct {
     const char *member;
 } Jimp;
 
-// TODO: how do null-s fit into this entire system?
+typedef enum {
+    JIMP_ERR = 0,
+    JIMP_OK,
+    JIMP_IS_NULL
+} Jimp_Result;
+
 bool jimp_bool(Jimp *jimp, bool *boolean);
+Jimp_Result jimp_nullable_bool(Jimp *jimp, bool *boolean);
 bool jimp_number(Jimp *jimp, double *number);
+Jimp_Result jimp_nullable_number(Jimp *jimp, double *number);
 bool jimp_string(Jimp *jimp, const char **string);
+Jimp_Result jimp_nullable_string(Jimp *jimp, const char **string);
 bool jimp_object_begin(Jimp *jimp);
 bool jimp_object_member(Jimp *jimp);
 bool jimp_object_end(Jimp *jimp);
@@ -284,6 +292,20 @@ bool jimp_string(Jimp *jimp, const char **string)
     return true;
 }
 
+Jimp_Result jimp_nullable_string(Jimp *jimp, const char **string)
+{
+    jimp__get_token(jimp);
+    if (jimp->token == JIMP_STRING) {
+        *string = strdup(jimp->string);
+    } else if (jimp->token == JIMP_NULL) {
+        return JIMP_IS_NULL;
+    } else {
+        jimp_diagf(jimp, "ERROR: expected string, but got `%s`\n", jimp__token_kind(jimp->token));
+        return JIMP_ERR;
+    }
+    return JIMP_OK;
+}
+
 bool jimp_bool(Jimp *jimp, bool *boolean)
 {
     jimp__get_token(jimp);
@@ -298,11 +320,41 @@ bool jimp_bool(Jimp *jimp, bool *boolean)
     return true;
 }
 
+Jimp_Result jimp_nullable_bool(Jimp *jimp, bool *boolean)
+{
+    jimp__get_token(jimp);
+    if (jimp->token == JIMP_TRUE) {
+        *boolean = true;
+    } else if (jimp->token == JIMP_FALSE) {
+        *boolean = false;
+    } else if (jimp->token == JIMP_NULL) {
+        return JIMP_IS_NULL;
+    } else {
+        jimp_diagf(jimp, "ERROR: expected boolean, but got `%s`\n", jimp__token_kind(jimp->token));
+        return JIMP_ERR;
+    }
+    return JIMP_OK;
+}
+
 bool jimp_number(Jimp *jimp, double *number)
 {
     if (!jimp__get_and_expect_token(jimp, JIMP_NUMBER)) return false;
     *number = jimp->number;
     return true;
+}
+
+Jimp_Result jimp_nullable_number(Jimp *jimp, double *number)
+{
+    jimp__get_token(jimp);
+    if (jimp->token == JIMP_NUMBER) {
+        *number = jimp->number;
+    } else if (jimp ->token == JIMP_NULL) {
+        return JIMP_IS_NULL;
+    } else {
+        jimp_diagf(jimp, "ERROR: expected number, but got `%s`\n", jimp__token_kind(jimp->token));
+        return JIMP_ERR;
+    }
+    return JIMP_OK;
 }
 
 static bool jimp__get_and_expect_token(Jimp *jimp, Jimp_Token token)
