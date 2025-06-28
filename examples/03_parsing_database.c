@@ -2,9 +2,9 @@
 #include <stdbool.h>
 #define NOB_IMPLEMENTATION
 #define NOB_STRIP_PREFIX
-#include "nob.h"
+#include "../thirdparty/nob.h"
 #define JIMP_IMPLEMENTATION
-#include "jimp.h"
+#include "../jimp.h"
 
 typedef struct {
     const char *name;
