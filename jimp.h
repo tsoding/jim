@@ -286,8 +286,7 @@ bool jimp_string(Jimp *jimp, const char **string)
 
 bool jimp_bool(Jimp *jimp, bool *boolean)
 {
-    jimp__get_token(jimp);
-    if (jimp->token == JIMP_TRUE) {
+    if (!jimp__get_token(jimp)) return false;
         *boolean = true;
     } else if (jimp->token == JIMP_FALSE) {
         *boolean = false;
