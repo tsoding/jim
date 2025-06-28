@@ -200,23 +200,23 @@ void jimp_diagf(Jimp *jimp, const char *fmt, ...)
 
 static const char *jimp__token_kind(Jimp_Token token)
 {
-   switch (token) {
-   case JIMP_EOF:      return "end of input";
-   case JIMP_INVALID:  return "invalid";
-   case JIMP_OCURLY:   return "{";
-   case JIMP_CCURLY:   return "}";
-   case JIMP_OBRACKET: return "[";
-   case JIMP_CBRACKET: return "]";
-   case JIMP_COMMA:    return ",";
-   case JIMP_COLON:    return ":";
-   case JIMP_TRUE:     return "true";
-   case JIMP_FALSE:    return "false";
-   case JIMP_NULL:     return "null";
-   case JIMP_STRING:   return "string";
-   case JIMP_NUMBER:   return "number";
-   }
-   assert(0 && "unreachable");
-   return NULL;
+    switch (token) {
+    case JIMP_EOF:      return "end of input";
+    case JIMP_INVALID:  return "invalid";
+    case JIMP_OCURLY:   return "{";
+    case JIMP_CCURLY:   return "}";
+    case JIMP_OBRACKET: return "[";
+    case JIMP_CBRACKET: return "]";
+    case JIMP_COMMA:    return ",";
+    case JIMP_COLON:    return ":";
+    case JIMP_TRUE:     return "true";
+    case JIMP_FALSE:    return "false";
+    case JIMP_NULL:     return "null";
+    case JIMP_STRING:   return "string";
+    case JIMP_NUMBER:   return "number";
+    }
+    assert(0 && "unreachable");
+    return NULL;
 }
 
 bool jimp_array_begin(Jimp *jimp)
