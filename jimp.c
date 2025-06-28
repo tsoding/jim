@@ -8,9 +8,9 @@
 
 typedef struct {
     const char *name;
-    long age;
+    double age;
     const char *location;
-    long body_count;
+    double body_count;
 } Person;
 
 typedef struct {
@@ -55,9 +55,9 @@ bool parse_people(Jimp *jimp, People *ps)
 void print_person(const Person *p)
 {
     printf("name       = %s\n",  p->name);
-    printf("age        = %ld\n", p->age);
+    printf("age        = %lf\n", p->age);
     printf("location   = %s\n",  p->location);
-    printf("body_count = %ld\n", p->body_count);
+    printf("body_count = %lf\n", p->body_count);
 }
 
 typedef struct {
@@ -78,9 +78,10 @@ int main()
     if (!read_entire_file(file_path, &sb)) return 1;
     Jimp jimp = {
         .file_path = file_path,
+        .start = sb.items,
+        .end = sb.items + sb.count,
+        .point = sb.items,
     };
-    static char string_store[1024];
-    stb_c_lexer_init(&jimp.l, sb.items, sb.items + sb.count, string_store, sizeof(string_store));
 
     People ps = {0};
     Numbers xs = {0};
@@ -91,7 +92,7 @@ int main()
         } else if (strcmp(jimp.member, "number") == 0) {
             if (!jimp_array_begin(&jimp)) return 1;
             while (jimp_array_item(&jimp)) {
-                long x = 0;
+                double x = 0;
                 if (!jimp_number(&jimp, &x)) return 1;
                 da_append(&xs, x);
             }
