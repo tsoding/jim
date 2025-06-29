@@ -7,13 +7,10 @@
 
 #include <assert.h>
 #include <stdlib.h>
-
-typedef void* Jim_Sink;
-typedef size_t (*Jim_Write)(const void *ptr, size_t size, size_t nmemb, Jim_Sink sink);
+#include <string.h>
 
 typedef enum {
     JIM_OK = 0,
-    JIM_WRITE_ERROR,
     JIM_SCOPES_UNDERFLOW,
     JIM_OUT_OF_SCOPE_KEY,
     JIM_DOUBLE_KEY
@@ -33,9 +30,10 @@ typedef struct {
 } Jim_Scope;
 
 typedef struct {
-    Jim_Sink sink;
-    Jim_Write write;
     Jim_Error error;
+    char *sink;
+    size_t sink_count;
+    size_t sink_capacity;
     Jim_Scope *scopes;
     size_t scopes_count;
     size_t scopes_capacity;
@@ -62,15 +60,6 @@ void jim_object_end(Jim *jim);
 #endif // JIM_H_
 
 #ifdef JIM_IMPLEMENTATION
-
-static size_t jim_strlen(const char *s)
-{
-    size_t count = 0;
-    while (*(s + count)) {
-        count += 1;
-    }
-    return count;
-}
 
 static void jim_scope_push(Jim *jim, Jim_Scope_Kind kind)
 {
@@ -113,16 +102,21 @@ static Jim_Scope *jim_current_scope(Jim *jim)
 static void jim_write(Jim *jim, const char *buffer, size_t size)
 {
     if (jim->error == JIM_OK) {
-        if (jim->write(buffer, 1, size, jim->sink) < size) {
-            jim->error = 1;
+        while (jim->sink_count + size >= jim->sink_capacity) {
+            // TODO: rename JIM_SCOPES_CAPACITY to something else since it's used by both sink and scopes
+            if (jim->sink_capacity == 0) jim->sink_capacity = JIM_SCOPES_CAPACITY;
+            else jim->sink_capacity *= 2;
+            jim->sink = realloc(jim->sink, sizeof(*jim->sink)*jim->sink_capacity);
         }
+        memcpy(jim->sink + jim->sink_count, buffer, size);
+        jim->sink_count += size;
     }
 }
 
 static void jim_write_cstr(Jim *jim, const char *cstr)
 {
     if (jim->error == JIM_OK) {
-        jim_write(jim, cstr, jim_strlen(cstr));
+        jim_write(jim, cstr, strlen(cstr));
     }
 }
 
@@ -166,8 +160,6 @@ const char *jim_error_string(Jim_Error error)
     switch (error) {
     case JIM_OK:
         return "There is no error. The developer of this software just had a case of \"Task failed successfully\" https://i.imgur.com/Bdb3rkq.jpg - Please contact the developer and tell them that they are very lazy for not checking errors properly.";
-    case JIM_WRITE_ERROR:
-        return "Write error";
     case JIM_SCOPES_UNDERFLOW:
         return "Stack of Scopes Underflow";
     case JIM_OUT_OF_SCOPE_KEY:
@@ -319,7 +311,7 @@ void jim_string_sized(Jim *jim, const char *str, size_t size)
 void jim_string(Jim *jim, const char *str)
 {
     if (jim->error == JIM_OK) {
-        jim_string_sized(jim, str, jim_strlen(str));
+        jim_string_sized(jim, str, strlen(str));
     }
 }
 
@@ -354,7 +346,7 @@ void jim_object_begin(Jim *jim)
 void jim_member_key(Jim *jim, const char *str)
 {
     if (jim->error == JIM_OK) {
-        jim_member_key_sized(jim, str, jim_strlen(str));
+        jim_member_key_sized(jim, str, strlen(str));
     }
 }
 

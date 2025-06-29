@@ -14,10 +14,7 @@ Immediate Mode JSON Serialization Library in C. Similar to [imgui](https://githu
 
 int main()
 {
-    Jim jim = {
-        .sink = stdout,
-        .write = (Jim_Write) fwrite,
-    };
+    Jim jim = {0};
 
     jim_object_begin(&jim);
         jim_member_key(&jim, "null");
@@ -60,6 +57,8 @@ int main()
                 jim_error_string(jim.error));
         return -1;
     }
+
+    fwrite(jim.sink, jim.sink_count, 1, stdout);
 
     return 0;
 }

@@ -32,7 +32,7 @@ Node *generate_tree_of_fruits(size_t level_cur, size_t level_max)
     }
 }
 
-void print_node_as_json(Jim *jim, Node *node)
+void render_node_as_json(Jim *jim, Node *node)
 {
     if (node == NULL) {
         jim_null(jim);
@@ -42,10 +42,10 @@ void print_node_as_json(Jim *jim, Node *node)
         jim_string(jim, node->value);
 
         jim_member_key(jim, "left");
-        print_node_as_json(jim, node->left);
+        render_node_as_json(jim, node->left);
 
         jim_member_key(jim, "right");
-        print_node_as_json(jim, node->right);
+        render_node_as_json(jim, node->right);
         jim_object_end(jim);
     }
 }
@@ -53,10 +53,8 @@ void print_node_as_json(Jim *jim, Node *node)
 int main()
 {
     srand(time(0));
-    Jim jim = {
-        .sink = stdout,
-        .write = (Jim_Write) fwrite,
-    };
-    print_node_as_json(&jim, generate_tree_of_fruits(0, 4));
+    Jim jim = {0};
+    render_node_as_json(&jim, generate_tree_of_fruits(0, 4));
+    fwrite(jim.sink, jim.sink_count, 1, stdout);
     return 0;
 }

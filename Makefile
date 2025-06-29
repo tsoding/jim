@@ -1,4 +1,4 @@
-CFLAGS=-Wall -Wextra -Wswitch-enum -ggdb
+CFLAGS=-Wall -Wextra -Wswitch-enum -ggdb -I./thirdparty/
 
 .PHONY: all
 all: examples test
