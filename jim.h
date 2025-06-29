@@ -5,7 +5,8 @@
 #define JIM_SCOPES_CAPACITY 128
 #endif // JIM_SCOPES_CAPACITY
 
-#include <stddef.h>
+#include <assert.h>
+#include <stdlib.h>
 
 typedef void* Jim_Sink;
 typedef size_t (*Jim_Write)(const void *ptr, size_t size, size_t nmemb, Jim_Sink sink);
@@ -13,7 +14,6 @@ typedef size_t (*Jim_Write)(const void *ptr, size_t size, size_t nmemb, Jim_Sink
 typedef enum {
     JIM_OK = 0,
     JIM_WRITE_ERROR,
-    JIM_SCOPES_OVERFLOW,
     JIM_SCOPES_UNDERFLOW,
     JIM_OUT_OF_SCOPE_KEY,
     JIM_DOUBLE_KEY
@@ -36,8 +36,9 @@ typedef struct {
     Jim_Sink sink;
     Jim_Write write;
     Jim_Error error;
-    Jim_Scope scopes[JIM_SCOPES_CAPACITY];
-    size_t scopes_size;
+    Jim_Scope *scopes;
+    size_t scopes_count;
+    size_t scopes_capacity;
 } Jim;
 
 void jim_null(Jim *jim);
@@ -74,22 +75,24 @@ static size_t jim_strlen(const char *s)
 static void jim_scope_push(Jim *jim, Jim_Scope_Kind kind)
 {
     if (jim->error == JIM_OK) {
-        if (jim->scopes_size < JIM_SCOPES_CAPACITY) {
-            jim->scopes[jim->scopes_size].kind = kind;
-            jim->scopes[jim->scopes_size].tail = 0;
-            jim->scopes[jim->scopes_size].key = 0;
-            jim->scopes_size += 1;
-        } else {
-            jim->error = JIM_SCOPES_OVERFLOW;
+        if (jim->scopes_count >= jim->scopes_capacity) {
+            if (jim->scopes_capacity == 0) jim->scopes_capacity = JIM_SCOPES_CAPACITY;
+            else jim->scopes_capacity *= 2;
+            jim->scopes = realloc(jim->scopes, sizeof(*jim->scopes)*jim->scopes_capacity);
+            assert(jim->scopes);
         }
+        jim->scopes[jim->scopes_count].kind = kind;
+        jim->scopes[jim->scopes_count].tail = 0;
+        jim->scopes[jim->scopes_count].key = 0;
+        jim->scopes_count += 1;
     }
 }
 
 static void jim_scope_pop(Jim *jim)
 {
     if (jim->error == JIM_OK) {
-        if (jim->scopes_size > 0) {
-            jim->scopes_size--;
+        if (jim->scopes_count > 0) {
+            jim->scopes_count--;
         } else {
             jim->error = JIM_SCOPES_UNDERFLOW;
         }
@@ -99,8 +102,8 @@ static void jim_scope_pop(Jim *jim)
 static Jim_Scope *jim_current_scope(Jim *jim)
 {
     if (jim->error == JIM_OK) {
-        if (jim->scopes_size > 0) {
-            return &jim->scopes[jim->scopes_size - 1];
+        if (jim->scopes_count > 0) {
+            return &jim->scopes[jim->scopes_count - 1];
         }
     }
 
@@ -165,8 +168,6 @@ const char *jim_error_string(Jim_Error error)
         return "There is no error. The developer of this software just had a case of \"Task failed successfully\" https://i.imgur.com/Bdb3rkq.jpg - Please contact the developer and tell them that they are very lazy for not checking errors properly.";
     case JIM_WRITE_ERROR:
         return "Write error";
-    case JIM_SCOPES_OVERFLOW:
-        return "Stack of Scopes Overflow";
     case JIM_SCOPES_UNDERFLOW:
         return "Stack of Scopes Underflow";
     case JIM_OUT_OF_SCOPE_KEY:
