@@ -1,7 +1,11 @@
 // Jim 1.0
 //
-// This is a legacy version of jim which uses fixed array for scopes and Jim_Sink/Jim_Write
-// interface to abstract away the IO. Not actively supported. Please use Jim 2.0 for new projects.
+// This is a legacy version of jim which uses
+// - Fixed array for scopes,
+// - Jim_Sink/Jim_Write interface to abstract away the IO,
+// - Jim_Error mechanism for indicating IO errors and/or invalid usage of the API.
+//
+// Not actively supported. Please use Jim 2.0 for new projects. This code is preserved because 2.0 is not backward compatible with 1.0.
 #ifndef JIM_H_
 #define JIM_H_
 

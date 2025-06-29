@@ -43,12 +43,6 @@ int main()
         jim_array_end(&jim);
     jim_object_end(&jim);
 
-    if (jim.error != JIM_OK) {
-        fprintf(stderr, "ERROR: could not serialize json properly: %s\n",
-                jim_error_string(jim.error));
-        return -1;
-    }
-
     fwrite(jim.sink, jim.sink_count, 1, stdout);
 
     return 0;
