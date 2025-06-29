@@ -24,13 +24,13 @@ bool parse_person(Jimp *jimp, Person *p)
     if (!jimp_object_begin(jimp)) return false;
     while (jimp_object_member(jimp)) {
         if (strcmp(jimp->member, "name") == 0) {
-            if (!jimp_string(jimp, &p->name, NULL))       return false;
+            if (!jimp_string(jimp, &p->name, strdup("Default Name"))) return false;
         } else if (strcmp(jimp->member, "age") == 0) {
-            if (!jimp_number(jimp, &p->age, 0))        return false;
+            if (!jimp_number(jimp, &p->age, 18))          return false;
         } else if (strcmp(jimp->member, "location") == 0) {
-            if (!jimp_string(jimp, &p->location, NULL))   return false;
+            if (!jimp_string(jimp, &p->location, strdup("UNKNOWN")))   return false;
         } else if (strcmp(jimp->member, "body_count") == 0) {
-            if (!jimp_number(jimp, &p->body_count, 0)) return false;
+            if (!jimp_number(jimp, &p->body_count, 69))   return false;
         } else {
             jimp_unknown_member(jimp);
             return false;
@@ -43,7 +43,7 @@ bool parse_people(Jimp *jimp, People *ps)
 {
     if (!jimp_array_begin(jimp)) return false;
     while (jimp_array_item(jimp)) {
-        Person p = {0};
+        Person p = {0}; // jimp_object_* uses this value as its default
         if (!parse_person(jimp, &p)) return false;
         da_append(ps, p);
     }
@@ -68,12 +68,7 @@ typedef struct {
 
 int main()
 {
-    // const char *file_path = "profile.json";
-    // const char *file_path = "numbers.json";
-    // const char *file_path = "profiles.json";
-    // const char *file_path = "empty.json";
-    // const char *file_path = "one.json";
-    const char *file_path = "database.json";
+    const char *file_path = "database_default.json";
     String_Builder sb = {0};
     if (!read_entire_file(file_path, &sb)) return 1;
     Jimp jimp = {
@@ -85,6 +80,7 @@ int main()
 
     People ps = {0};
     Numbers xs = {0};
+    Numbers xs_null = {0};
     if (!jimp_object_begin(&jimp)) return 1;
     while (jimp_object_member(&jimp)) {
         if (strcmp(jimp.member, "profile") == 0) {
@@ -92,9 +88,18 @@ int main()
         } else if (strcmp(jimp.member, "number") == 0) {
             if (!jimp_array_begin(&jimp)) return 1;
             while (jimp_array_item(&jimp)) {
-                double x = 0;
+                double x;
                 if (!jimp_number(&jimp, &x, 0)) return 1;
                 da_append(&xs, x);
+            }
+            if (!jimp_array_end(&jimp)) return 1;
+        } else if (strcmp(jimp.member, "array_null") == 0) {
+            // The default for array is an empty array 
+            if (!jimp_array_begin(&jimp)) return 1;
+            while (jimp_array_item(&jimp)) {
+                double x;
+                if (!jimp_number(&jimp, &x, 0)) return 1;
+                da_append(&xs_null, x);
             }
             if (!jimp_array_end(&jimp)) return 1;
         } else {
@@ -111,6 +116,15 @@ int main()
     printf("------------------------------\n");
     da_foreach(long, x, &xs) {
         printf("%ld ", *x);
+    }
+    printf("\n");
+    printf("------------------------------\n");
+    if(xs_null.count == 0) {
+        printf("[]\n");
+    } else {
+        da_foreach(long, x, &xs_null) {
+            printf("%ld ", *x);
+        }
     }
     printf("\n");
 

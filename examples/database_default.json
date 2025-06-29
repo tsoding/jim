@@ -1,0 +1,26 @@
+{
+    "number": [69, 420, null, 80085],
+    "array_null": null,
+    "profile": [
+        {
+            "location": "Wonderland",
+            "location": "Wonderland",
+            "body_count": 150,
+            "name": "Alice Smith",
+            "age": 34
+        },
+        {
+            "name": null,
+            "age": 45,
+            "location": "Atlantis",
+            "body_count": null
+        },
+        {
+            "name": "Ian Malcolm",
+            "age": 60,
+            "location": null,
+            "body_count": 400
+        },
+        null
+    ]
+}
