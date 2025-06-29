@@ -43,6 +43,7 @@ typedef struct {
 void jim_null(Jim *jim);
 void jim_bool(Jim *jim, int boolean);
 void jim_integer(Jim *jim, long long int x);
+// TODO: deprecate this version of jim_float introduce the one that does not require precision and uses something like sprintf from libc to render the floats
 void jim_float(Jim *jim, double x, int precision);
 void jim_string(Jim *jim, const char *str);
 void jim_string_sized(Jim *jim, const char *str, size_t size);

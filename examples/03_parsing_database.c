@@ -23,14 +23,18 @@ bool parse_person(Jimp *jimp, Person *p)
 {
     if (!jimp_object_begin(jimp)) return false;
     while (jimp_object_member(jimp)) {
-        if (strcmp(jimp->member, "name") == 0) {
-            if (!jimp_string(jimp, &p->name))       return false;
-        } else if (strcmp(jimp->member, "age") == 0) {
-            if (!jimp_number(jimp, &p->age))        return false;
-        } else if (strcmp(jimp->member, "location") == 0) {
-            if (!jimp_string(jimp, &p->location))   return false;
-        } else if (strcmp(jimp->member, "body_count") == 0) {
-            if (!jimp_number(jimp, &p->body_count)) return false;
+        if (strcmp(jimp->string, "name") == 0) {
+            if (!jimp_string(jimp)) return false;
+            p->name = strdup(jimp->string);
+        } else if (strcmp(jimp->string, "age") == 0) {
+            if (!jimp_number(jimp)) return false;
+            p->age = jimp->number;
+        } else if (strcmp(jimp->string, "location") == 0) {
+            if (!jimp_string(jimp)) return false;
+            p->location = strdup(jimp->string);
+        } else if (strcmp(jimp->string, "body_count") == 0) {
+            if (!jimp_number(jimp)) return false;
+            p->body_count = jimp->number;
         } else {
             jimp_unknown_member(jimp);
             return false;
@@ -87,14 +91,13 @@ int main()
     Numbers xs = {0};
     if (!jimp_object_begin(&jimp)) return 1;
     while (jimp_object_member(&jimp)) {
-        if (strcmp(jimp.member, "profile") == 0) {
+        if (strcmp(jimp.string, "profile") == 0) {
             if (!parse_people(&jimp, &ps)) return 1;
-        } else if (strcmp(jimp.member, "number") == 0) {
+        } else if (strcmp(jimp.string, "number") == 0) {
             if (!jimp_array_begin(&jimp)) return 1;
             while (jimp_array_item(&jimp)) {
-                double x = 0;
-                if (!jimp_number(&jimp, &x)) return 1;
-                da_append(&xs, x);
+                if (!jimp_number(&jimp)) return 1;
+                da_append(&xs, jimp.number);
             }
             if (!jimp_array_end(&jimp)) return 1;
         } else {
