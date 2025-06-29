@@ -151,14 +151,14 @@ void jim_bool(Jim *jim, int boolean)
     jim_element_end(jim);
 }
 
-static void jim_integer_no_element(Jim *jim, long long int x)
+static void jim_integer_no_element(Jim *jim, long long int x, int lzeros)
 {
     if (x < 0) {
         jim_write_cstr(jim, "-");
         x = -x;
     }
 
-    if (x == 0) {
+    if (x == 0 && lzeros == 0) {
         jim_write_cstr(jim, "0");
     } else {
         char buffer[64];
@@ -167,6 +167,11 @@ static void jim_integer_no_element(Jim *jim, long long int x)
         while (x > 0) {
             buffer[count++] = (x % 10) + '0';
             x /= 10;
+        }
+
+        while (lzeros > 0) {
+            buffer[count++] = '0';
+            --lzeros;
         }
 
         for (size_t i = 0; i < count / 2; ++i) {
@@ -182,7 +187,7 @@ static void jim_integer_no_element(Jim *jim, long long int x)
 void jim_integer(Jim *jim, long long int x)
 {
     jim_element_begin(jim);
-    jim_integer_no_element(jim, x);
+    jim_integer_no_element(jim, x, 0);
     jim_element_end(jim);
 }
 
@@ -199,10 +204,12 @@ void jim_float(Jim *jim, double x, int precision)
     } else {
         jim_element_begin(jim);
 
-        jim_integer_no_element(jim, (long long int) x);
+        jim_integer_no_element(jim, (long long int) x, 0);
         x -= (double) (long long int) x;
+        int lzeros = 0;
         while (precision-- > 0) {
             x *= 10.0;
+            lzeros += -1 < x && x < 1;
         }
         jim_write_cstr(jim, ".");
 
@@ -210,7 +217,7 @@ void jim_float(Jim *jim, double x, int precision)
         if (y < 0) {
             y = -y;
         }
-        jim_integer_no_element(jim, y);
+        jim_integer_no_element(jim, y, lzeros);
 
         jim_element_end(jim);
     }
