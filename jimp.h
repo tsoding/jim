@@ -201,7 +201,7 @@ static bool jimp__get_token(Jimp *jimp)
 
     char *endptr = NULL;
     jimp->number.value.i = strtoull(jimp->point, &endptr, 0); // TODO: This implies that jimp->end is a valid address and *jimp->end == 0
-    if (jimp->point != endptr && *endptr != '.') {
+    if (jimp->point != endptr && (*endptr != '.' && *endptr != 'E' && *endptr != 'e')) {
         jimp->number.type = JIMP_INTEGER;
         jimp->point = endptr;
         jimp->token = JIMP_NUMBER;
