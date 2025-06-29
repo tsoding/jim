@@ -36,6 +36,10 @@ typedef struct {
     size_t scopes_capacity;
 } Jim;
 
+// TODO: implement pretty-printing based on how nested the scopes are.
+//   Introduce a separate boolean flag in the Jim struct to enable/disable
+//   the pretty-printing.
+
 void jim_null(Jim *jim);
 void jim_bool(Jim *jim, int boolean);
 void jim_integer(Jim *jim, long long int x);
