@@ -40,6 +40,7 @@ typedef struct {
 //   Introduce a separate boolean flag in the Jim struct to enable/disable
 //   the pretty-printing.
 
+void jim_begin(Jim *jim);
 void jim_null(Jim *jim);
 void jim_bool(Jim *jim, int boolean);
 void jim_integer(Jim *jim, long long int x);
@@ -119,6 +120,12 @@ static int jim_get_utf8_char_len(unsigned char ch)
     default:
         return 2;
     }
+}
+
+void jim_begin(Jim *jim)
+{
+    jim->sink_count = 0;
+    jim->scopes_count = 0;
 }
 
 void jim_element_begin(Jim *jim)
