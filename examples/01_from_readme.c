@@ -5,7 +5,7 @@
 
 int main()
 {
-    Jim jim = {0};
+    Jim jim = {.pp = 4};
 
     jim_object_begin(&jim);
         jim_member_key(&jim, "null");
@@ -41,6 +41,24 @@ int main()
             jim_string(&jim, "Hello\tWorld\n");
             jim_string_sized(&jim, "\0\0\0\0", 4);
         jim_array_end(&jim);
+
+        jim_member_key(&jim, "nested_object");
+        jim_object_begin(&jim);
+            jim_member_key(&jim, "foo");
+            jim_integer(&jim, 69);
+            jim_member_key(&jim, "bar");
+            jim_integer(&jim, 420);
+            jim_member_key(&jim, "baz");
+            jim_integer(&jim, 1337);
+        jim_object_end(&jim);
+
+        jim_member_key(&jim, "empty_array"),
+        jim_array_begin(&jim);
+        jim_array_end(&jim);
+
+        jim_member_key(&jim, "empty_object"),
+        jim_object_begin(&jim);
+        jim_object_end(&jim);
     jim_object_end(&jim);
 
     fwrite(jim.sink, jim.sink_count, 1, stdout);

@@ -14,7 +14,7 @@ Immediate Mode JSON Serialization Library in C. Similar to [imgui](https://githu
 
 int main()
 {
-    Jim jim = {0};
+    Jim jim = {.pp = 4};
 
     jim_object_begin(&jim);
         jim_member_key(&jim, "null");
@@ -50,6 +50,24 @@ int main()
             jim_string(&jim, "Hello\tWorld\n");
             jim_string_sized(&jim, "\0\0\0\0", 4);
         jim_array_end(&jim);
+
+        jim_member_key(&jim, "nested_object");
+        jim_object_begin(&jim);
+            jim_member_key(&jim, "foo");
+            jim_integer(&jim, 69);
+            jim_member_key(&jim, "bar");
+            jim_integer(&jim, 420);
+            jim_member_key(&jim, "baz");
+            jim_integer(&jim, 1337);
+        jim_object_end(&jim);
+
+        jim_member_key(&jim, "empty_array"),
+        jim_array_begin(&jim);
+        jim_array_end(&jim);
+
+        jim_member_key(&jim, "empty_object"),
+        jim_object_begin(&jim);
+        jim_object_end(&jim);
     jim_object_end(&jim);
 
     fwrite(jim.sink, jim.sink_count, 1, stdout);
@@ -62,31 +80,43 @@ int main()
 
 ```console
 $ cc -o example example.c
-$ ./example | jq .
+$ ./example
 {
-  "null": null,
-  "bool": [
-    false,
-    true
-  ],
-  "integers": [
-    -3,
-    -2,
-    -1,
-    0,
-    1,
-    2,
-    3
-  ],
-  "floats": [
-    3.1415,
-    2.71828,
-    1.618
-  ],
-  "string": [
-    "Hello\tWorld\n",
-    "\u0000\u0000\u0000\u0000"
-  ]
+    "null": null,
+    "bool": [
+        false,
+        true
+    ],
+    "integers": [
+        -3,
+        -2,
+        -1,
+        0,
+        1,
+        2,
+        3
+    ],
+    "floats": [
+        0.0,
+        0.0,
+        3.1415,
+        2.71828,
+        1.6180,
+        null,
+        null,
+        null
+    ],
+    "string": [
+        "Hello\tWorld\n",
+        "\u0000\u0000\u0000\u0000"
+    ],
+    "nested_object": {
+        "foo": 69,
+        "bar": 420,
+        "baz": 1337
+    },
+    "empty_array": [],
+    "empty_object": {}
 }
 ```
 
