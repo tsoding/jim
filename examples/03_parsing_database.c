@@ -70,22 +70,15 @@ typedef struct {
     size_t capacity;
 } Numbers;
 
-int main()
+int main(void)
 {
-    // const char *file_path = "profile.json";
-    // const char *file_path = "numbers.json";
-    // const char *file_path = "profiles.json";
-    // const char *file_path = "empty.json";
-    // const char *file_path = "one.json";
     const char *file_path = "database.json";
+
     String_Builder sb = {0};
     if (!read_entire_file(file_path, &sb)) return 1;
-    Jimp jimp = {
-        .file_path = file_path,
-        .start = sb.items,
-        .end = sb.items + sb.count,
-        .point = sb.items,
-    };
+
+    Jimp jimp = {0};
+    jimp_begin(&jimp, file_path, sb.items, sb.count);
 
     People ps = {0};
     Numbers xs = {0};

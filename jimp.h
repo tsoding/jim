@@ -53,6 +53,8 @@ typedef struct {
 
 // TODO: how do null-s fit into this entire system?
 
+void jimp_begin(Jimp *jimp, const char *file_path, const char *input, size_t input_size);
+
 /// If succeeds puts the freshly parsed boolean into jimp->boolean.
 /// Any consequent calls to the jimp_* functions may invalidate jimp->boolean.
 bool jimp_boolean(Jimp *jimp);
@@ -204,6 +206,14 @@ static bool jimp__get_token(Jimp *jimp)
     jimp->token = JIMP_INVALID;
     jimp_diagf(jimp, "ERROR: invalid token\n");
     return false;
+}
+
+void jimp_begin(Jimp *jimp, const char *file_path, const char *input, size_t input_size)
+{
+    jimp->file_path = file_path;
+    jimp->start     = input;
+    jimp->end       = input + input_size;
+    jimp->point     = input;
 }
 
 void jimp_diagf(Jimp *jimp, const char *fmt, ...)
