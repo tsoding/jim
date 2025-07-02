@@ -124,13 +124,13 @@ $ ./example
 
 ```console
 $ make
-$ ./test
+$ ./test_jim
 ```
 
-The expected outputs of the test cases are stored in [./test_expected.h](./test_expected.h). To regenerate it just run:
+The expected outputs of the test cases are stored in [./test_jim_expected.h](./test_jim_expected.h). To regenerate it just run:
 
 ```console
-$ ./test record
+$ ./test_jim record
 ```
 
 ## Notes

@@ -9,7 +9,7 @@ jobs:
       - name: build all and examples
         run: |
           make -k
-          ./test
+          ./test_jim
         env:
           CC: gcc
           CXX: g++
@@ -20,7 +20,7 @@ jobs:
       - name: build all and examples
         run: |
           make -k
-          ./test
+          ./test_jim
         env:
           CC: clang
           CXX: clang++
@@ -31,7 +31,7 @@ jobs:
       - name: build all and examples
         run: |
           make -k
-          ./test
+          ./test_jim
         env:
           CC: clang
           CXX: clang++

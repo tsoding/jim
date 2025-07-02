@@ -8,10 +8,11 @@
 #define NOB_STRIP_PREFIX
 #include "./nob.h"
 
-#include "./test_expected.h"
+#include "./test_jim_expected.h"
 
 void null_case(Jim *jim)
 {
+    jim_begin(jim);
     jim_array_begin(jim);
     jim_null(jim);
     jim_array_end(jim);
@@ -19,6 +20,7 @@ void null_case(Jim *jim)
 
 void bool_case(Jim *jim)
 {
+    jim_begin(jim);
     jim_array_begin(jim);
     jim_bool(jim, 0);
     jim_bool(jim, 1);
@@ -27,6 +29,7 @@ void bool_case(Jim *jim)
 
 void integer_case(Jim *jim)
 {
+    jim_begin(jim);
     jim_array_begin(jim);
     for (int i = -10; i <= 10; ++i) {
         jim_integer(jim, i);
@@ -36,6 +39,7 @@ void integer_case(Jim *jim)
 
 void float_case(Jim *jim)
 {
+    jim_begin(jim);
     jim_array_begin(jim);
     jim_float(jim, 0.0, 4);
     jim_float(jim, -0.0, 4);
@@ -50,6 +54,7 @@ void float_case(Jim *jim)
 
 void string_case(Jim *jim)
 {
+    jim_begin(jim);
     jim_array_begin(jim);
     jim_string(jim, "hello");
     jim_string(jim, "world");
@@ -60,6 +65,7 @@ void string_case(Jim *jim)
 
 void array_case(Jim *jim)
 {
+    jim_begin(jim);
     jim_array_begin(jim);
 
     for (int n = 1; n <= 5; ++n) {
@@ -86,8 +92,104 @@ void object_case_rec(Jim *jim, int level, int *counter)
 
 void object_case(Jim *jim)
 {
+    jim_begin(jim);
     int counter = 0;
     object_case_rec(jim, 0, &counter);
+}
+
+void pp_empty_array_case(Jim *jim)
+{
+    jim_begin(jim);
+    jim->pp = 4;
+    jim_array_begin(jim);
+    jim_array_end(jim);
+}
+
+void pp_singleton_array_case(Jim *jim)
+{
+    jim_begin(jim);
+    jim->pp = 4;
+    jim_array_begin(jim);
+    jim_integer(jim, 69);
+    jim_array_end(jim);
+}
+
+void pp_array_case(Jim *jim)
+{
+    jim_begin(jim);
+    jim->pp = 4;
+    jim_array_begin(jim);
+    jim_integer(jim, 69);
+    jim_integer(jim, 420);
+    jim_integer(jim, 1337);
+    jim_integer(jim, 80085);
+    jim_array_end(jim);
+}
+
+void pp_empty_object_case(Jim *jim)
+{
+    jim_begin(jim);
+    jim->pp = 4;
+    jim_object_begin(jim);
+    jim_object_end(jim);
+}
+
+void pp_singleton_object_case(Jim *jim)
+{
+    jim_begin(jim);
+    jim->pp = 4;
+    jim_object_begin(jim);
+    jim_member_key(jim, "foo");
+    jim_integer(jim, 69);
+    jim_object_end(jim);
+}
+
+void pp_object_case(Jim *jim)
+{
+    jim_begin(jim);
+    jim->pp = 4;
+    jim_object_begin(jim);
+    jim_member_key(jim, "foo");
+    jim_integer(jim, 69);
+    jim_member_key(jim, "bar");
+    jim_integer(jim, 420);
+    jim_member_key(jim, "baz");
+    jim_integer(jim, 1337);
+    jim_object_end(jim);
+}
+
+void pp_nested_case(Jim *jim)
+{
+    jim_begin(jim);
+    jim->pp = 4;
+    jim_object_begin(jim);
+        jim_member_key(jim, "integer");
+        jim_integer(jim, 69);
+        jim_member_key(jim, "empty_array");
+        jim_array_begin(jim);
+        jim_array_end(jim);
+        jim_member_key(jim, "empty_object");
+        jim_object_begin(jim);
+        jim_object_end(jim);
+        jim_member_key(jim, "array_of_integers");
+        jim_array_begin(jim);
+            jim_integer(jim, 69);
+            jim_integer(jim, 420);
+            jim_integer(jim, 1337);
+            jim_integer(jim, 80085);
+        jim_array_end(jim);
+        jim_member_key(jim, "object_of_integers");
+        jim_object_begin(jim);
+            jim_member_key(jim, "foo");
+            jim_integer(jim, 69);
+            jim_member_key(jim, "bar");
+            jim_integer(jim, 420);
+            jim_member_key(jim, "baz");
+            jim_integer(jim, 1337);
+            jim_member_key(jim, "karabaz");
+            jim_integer(jim, 80085);
+        jim_object_end(jim);
+    jim_object_end(jim);
 }
 
 typedef struct {
@@ -109,6 +211,13 @@ const Test_Case test_cases[] = {
     TEST_CASE(string_case),
     TEST_CASE(array_case),
     TEST_CASE(object_case),
+    TEST_CASE(pp_empty_array_case),
+    TEST_CASE(pp_singleton_array_case),
+    TEST_CASE(pp_array_case),
+    TEST_CASE(pp_empty_object_case),
+    TEST_CASE(pp_singleton_object_case),
+    TEST_CASE(pp_object_case),
+    TEST_CASE(pp_nested_case),
 };
 
 bool record(const char *header_path)
@@ -135,6 +244,8 @@ void test(void)
 {
     Jim jim_buffer = {0};
 
+
+    assert(ARRAY_LEN(test_cases) == ARRAY_LEN(test_cases_expected) && "Run `record` command to update expected test cases");
     for (size_t i = 0; i < ARRAY_LEN(test_cases); ++i) {
         printf("%s ... ", test_cases[i].name);
 
@@ -159,7 +270,7 @@ int main(int argc, char **argv)
 {
     if (argc >= 2) {
         if (strcmp(argv[1], "record") == 0) {
-            if (!record("test_expected.h")) return 1;
+            if (!record("test_jim_expected.h")) return 1;
         } else {
             fprintf(stderr, "Usage: ./test [record]\n");
             fprintf(stderr, "ERROR: unknown subcommand %s.\n", argv[1]);
