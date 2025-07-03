@@ -27,14 +27,14 @@ bool parse_person(Jimp *jimp, Person *p)
             if (!jimp_string(jimp)) return false;
             p->name = strdup(jimp->string);
         } else if (strcmp(jimp->string, "age") == 0) {
-            if (!jimp_integer(jimp)) return false;
+            if (!jimp_number(jimp)) return false;
             p->age = jimp->integer;
         } else if (strcmp(jimp->string, "location") == 0) {
             if (!jimp_string(jimp)) return false;
             p->location = strdup(jimp->string);
         } else if (strcmp(jimp->string, "cash") == 0) {
-            if (!jimp_float(jimp)) return false;
-            p->cash = jimp->floating;
+            if (!jimp_number(jimp)) return false;
+            p->cash = jimp->decimal;
         } else {
             jimp_unknown_member(jimp);
             return false;
@@ -65,7 +65,13 @@ void print_person(const Person *p)
 }
 
 typedef struct {
-    JimpNumber *items;
+    JimpNumberType type;
+    long long integer;
+    double decimal;
+} Number;
+
+typedef struct {
+    Number *items;
     size_t count;
     size_t capacity;
 } Numbers;
@@ -90,7 +96,7 @@ int main(void)
             if (!jimp_array_begin(&jimp)) return 1;
             while (jimp_array_item(&jimp)) {
                 if (!jimp_number(&jimp)) return 1;
-                da_append(&xs, jimp.number);
+                da_append(&xs, {.type = jimp.number_type, .integer = jimp.integer, .decimal = jimp.decimal});
             }
             if (!jimp_array_end(&jimp)) return 1;
         } else {
@@ -107,9 +113,9 @@ int main(void)
     printf("------------------------------\n");
     da_foreach(JimpNumber, x, &xs) {
         if (x->type == JIMP_INTEGER)
-            printf("%lld ", x->value.i);
+            printf("%lld ", x->integer);
         else
-            printf("%lf ",  x->value.f);
+            printf("%lf ",  x->decimal);
     }
     printf("\n");
 

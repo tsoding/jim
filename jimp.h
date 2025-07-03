@@ -36,19 +36,9 @@ typedef enum {
 } Jimp_Token;
 
 typedef enum {
-    JIMP_FLOATING,
+    JIMP_DECIMAL,
     JIMP_INTEGER
 } JimpNumberType;
-
-union JimpNumberValue {
-    double f;
-    long long i;
-};
-
-typedef struct {
-    JimpNumberType type;
-    union JimpNumberValue value;
-} JimpNumber;
 
 typedef struct {
     const char *file_path;
@@ -62,8 +52,8 @@ typedef struct {
     char *string;
     size_t string_count;
     size_t string_capacity;
-    JimpNumber number;
-    double floating;
+    JimpNumberType number_type;
+    double decimal;
     long long integer;
     bool boolean;
 } Jimp;
@@ -76,17 +66,9 @@ void jimp_begin(Jimp *jimp, const char *file_path, const char *input, size_t inp
 /// Any consequent calls to the jimp_* functions may invalidate jimp->boolean.
 bool jimp_boolean(Jimp *jimp);
 
-/// If succeeds puts the freshly parsed number into jimp->number.
-/// Any consequent calls to the jimp_* functions may invalidate jimp->number.
+/// If succeeds puts the freshly parsed number into jimp->number_type, jimp->decimal and jimp->integer.
+/// Any consequent calls to the jimp_* functions may invalidate  jimp->number_type, jimp->decimal and jimp->integer.
 bool jimp_number(Jimp *jimp);
-
-/// If succeeds puts the freshly parsed number into jimp->number and jimp->floating.
-/// Any consequent calls to the jimp_* functions may invalidate jimp->number and jimp->floating.
-bool jimp_float(Jimp *jimp);
-
-/// If succeeds puts the freshly parsed number into jimp->number and jimp->integer.
-/// Any consequent calls to the jimp_* functions may invalidate jimp->number and jimp->integer.
-bool jimp_integer(Jimp *jimp);
 
 /// If succeeds puts the freshly parsed string into jimp->string as a NULL-terminated string.
 /// Any consequent calls to the jimp_* functions may invalidate jimp->string.
@@ -200,16 +182,18 @@ static bool jimp__get_token(Jimp *jimp)
     }
 
     char *endptr = NULL;
-    jimp->number.value.i = strtoull(jimp->point, &endptr, 0); // TODO: This implies that jimp->end is a valid address and *jimp->end == 0
+    jimp->integer = strtoull(jimp->point, &endptr, 0); // TODO: This implies that jimp->end is a valid address and *jimp->end == 0
     if (jimp->point != endptr && (*endptr != '.' && *endptr != 'E' && *endptr != 'e')) {
-        jimp->number.type = JIMP_INTEGER;
+        jimp->number_type = JIMP_INTEGER;
+        jimp->decimal = jimp->integer;
         jimp->point = endptr;
         jimp->token = JIMP_NUMBER;
         return true;
     }
-    jimp->number.value.f = strtod(jimp->point, &endptr);
+    jimp->decimal = strtod(jimp->point, &endptr);
     if (jimp->point != endptr) {
-        jimp->number.type = JIMP_FLOATING;
+        jimp->number_type = JIMP_DECIMAL;
+        jimp->integer = jimp->decimal;
         jimp->point = endptr;
         jimp->token = JIMP_NUMBER;
         return true;
@@ -401,20 +385,6 @@ bool jimp_bool(Jimp *jimp, bool *boolean)
 bool jimp_number(Jimp *jimp)
 {
     return jimp__get_and_expect_token(jimp, JIMP_NUMBER);
-}
-
-bool jimp_float(Jimp *jimp)
-{
-    if (!jimp__get_and_expect_token(jimp, JIMP_NUMBER)) return false;
-    jimp->floating = jimp->number.type == JIMP_FLOATING ? jimp->number.value.f : jimp->number.value.i;
-    return true;
-}
-
-bool jimp_integer(Jimp *jimp)
-{
-    if (!jimp__get_and_expect_token(jimp, JIMP_NUMBER) || jimp->number.type != JIMP_INTEGER) return false;
-    jimp->integer = jimp->number.value.i;
-    return true;
 }
 
 static bool jimp__get_and_expect_token(Jimp *jimp, Jimp_Token token)
