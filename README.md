@@ -135,7 +135,7 @@ $ ./test_jim record
 
 ## Notes
 
-1. Does not depends on libc. Could be theoretically used in embedded, but I know nothing about embedded, so maybe not.
-2. `jim_float()` is quite likely very stupid and imprecise
+1. Does not depend on libc. Could be theoretically used in embedded, but I know nothing about embedded, so maybe not.
+2. `jim_float()` is quite likely very stupid and imprecise.
 
 <!-- TODO: document jimp.h here -->

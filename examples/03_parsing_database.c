@@ -8,9 +8,9 @@
 
 typedef struct {
     const char *name;
-    double age;
+    long long age;
     const char *location;
-    double body_count;
+    double cash;
 } Person;
 
 typedef struct {
@@ -28,13 +28,13 @@ bool parse_person(Jimp *jimp, Person *p)
             p->name = strdup(jimp->string);
         } else if (strcmp(jimp->string, "age") == 0) {
             if (!jimp_number(jimp)) return false;
-            p->age = jimp->number;
+            p->age = jimp->integer;
         } else if (strcmp(jimp->string, "location") == 0) {
             if (!jimp_string(jimp)) return false;
             p->location = strdup(jimp->string);
-        } else if (strcmp(jimp->string, "body_count") == 0) {
+        } else if (strcmp(jimp->string, "cash") == 0) {
             if (!jimp_number(jimp)) return false;
-            p->body_count = jimp->number;
+            p->cash = jimp->decimal;
         } else {
             jimp_unknown_member(jimp);
             return false;
@@ -58,14 +58,20 @@ bool parse_people(Jimp *jimp, People *ps)
 
 void print_person(const Person *p)
 {
-    printf("name       = %s\n",  p->name);
-    printf("age        = %lf\n", p->age);
-    printf("location   = %s\n",  p->location);
-    printf("body_count = %lf\n", p->body_count);
+    printf("name     = %s\n",     p->name);
+    printf("age      = %lld\n",   p->age);
+    printf("location = %s\n",     p->location);
+    printf("cash     = $%.2lf\n", p->cash);
 }
 
 typedef struct {
-    long *items;
+    JimpNumberType type;
+    long long integer;
+    double decimal;
+} Number;
+
+typedef struct {
+    Number *items;
     size_t count;
     size_t capacity;
 } Numbers;
@@ -90,7 +96,7 @@ int main(void)
             if (!jimp_array_begin(&jimp)) return 1;
             while (jimp_array_item(&jimp)) {
                 if (!jimp_number(&jimp)) return 1;
-                da_append(&xs, jimp.number);
+                da_append(&xs, {.type = jimp.number_type, .integer = jimp.integer, .decimal = jimp.decimal});
             }
             if (!jimp_array_end(&jimp)) return 1;
         } else {
@@ -105,8 +111,11 @@ int main(void)
         printf("\n");
     }
     printf("------------------------------\n");
-    da_foreach(long, x, &xs) {
-        printf("%ld ", *x);
+    da_foreach(JimpNumber, x, &xs) {
+        if (x->type == JIMP_INTEGER)
+            printf("%lld ", x->integer);
+        else
+            printf("%lf ",  x->decimal);
     }
     printf("\n");
 

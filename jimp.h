@@ -35,6 +35,11 @@ typedef enum {
     JIMP_NUMBER,
 } Jimp_Token;
 
+typedef enum {
+    JIMP_DECIMAL,
+    JIMP_INTEGER
+} JimpNumberType;
+
 typedef struct {
     const char *file_path;
     const char *start;
@@ -47,7 +52,9 @@ typedef struct {
     char *string;
     size_t string_count;
     size_t string_capacity;
-    double number;
+    JimpNumberType number_type;
+    double decimal;
+    long long integer;
     bool boolean;
 } Jimp;
 
@@ -59,8 +66,8 @@ void jimp_begin(Jimp *jimp, const char *file_path, const char *input, size_t inp
 /// Any consequent calls to the jimp_* functions may invalidate jimp->boolean.
 bool jimp_bool(Jimp *jimp);
 
-/// If succeeds puts the freshly parsed number into jimp->number.
-/// Any consequent calls to the jimp_* functions may invalidate jimp->number.
+/// If succeeds puts the freshly parsed number into jimp->number_type, jimp->decimal and jimp->integer.
+/// Any consequent calls to the jimp_* functions may invalidate  jimp->number_type, jimp->decimal and jimp->integer.
 bool jimp_number(Jimp *jimp);
 
 /// If succeeds puts the freshly parsed string into jimp->string as a NULL-terminated string.
@@ -182,8 +189,18 @@ static bool jimp__get_token(Jimp *jimp)
     }
 
     char *endptr = NULL;
-    jimp->number = strtod(jimp->point, &endptr); // TODO: This implies that jimp->end is a valid address and *jimp->end == 0
+    jimp->integer = strtoull(jimp->point, &endptr, 0); // TODO: This implies that jimp->end is a valid address and *jimp->end == 0
+    if (jimp->point != endptr && (*endptr != '.' && *endptr != 'E' && *endptr != 'e')) {
+        jimp->number_type = JIMP_INTEGER;
+        jimp->decimal = jimp->integer;
+        jimp->point = endptr;
+        jimp->token = JIMP_NUMBER;
+        return true;
+    }
+    jimp->decimal = strtod(jimp->point, &endptr);
     if (jimp->point != endptr) {
+        jimp->number_type = JIMP_DECIMAL;
+        jimp->integer = jimp->decimal;
         jimp->point = endptr;
         jimp->token = JIMP_NUMBER;
         return true;
