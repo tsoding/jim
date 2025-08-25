@@ -273,8 +273,9 @@ void jimp_diagf(Jimp *jimp, const char *fmt, ...)
             line_number += 1;
         }
     }
+    long line_offset = point - line_start;
 
-    fprintf(stderr, "%s:%ld:%ld: ", jimp->file_path, line_number + 1, point - line_start + 1);
+    fprintf(stderr, "%s:%ld:%ld: ", jimp->file_path, line_number + 1, line_offset + 1);
     va_list args;
     va_start(args, fmt);
     vfprintf(stderr, fmt, args);
