@@ -6,7 +6,8 @@
             "location": "Wonderland",
             "body_count": 150,
             "name": "Alice Smith",
-            "age": 34
+            "age": 34,
+            "height": 6
         },
         {
             "name": "Bob Johnson",

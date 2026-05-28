@@ -102,6 +102,9 @@ bool jimp_is_string_ahead(Jimp *jimp);
 bool jimp_is_array_ahead(Jimp *jimp);
 bool jimp_is_object_ahead(Jimp *jimp);
 
+/// Skips the member in the object
+bool jimp_skip_member(Jimp *jimp);
+
 #endif // JIMP_H_
 
 #ifdef JIMP_IMPLEMENTATION
@@ -443,6 +446,38 @@ static bool jimp__expect_token(Jimp *jimp, Jimp_Token token)
         return false;
     }
     return true;
+}
+
+bool jimp_skip_member(Jimp *jimp) {
+    if (!jimp__get_token(jimp)) return false;
+    switch(jimp->token) {
+    case JIMP_NULL:
+    case JIMP_TRUE:
+    case JIMP_FALSE:
+    case JIMP_NUMBER:
+    case JIMP_STRING:
+        return true;
+    case JIMP_OBRACKET: {
+        while(jimp_array_item(jimp)) {
+            if (!jimp_skip_member(jimp)) return false;
+        }
+        return jimp_array_end(jimp);
+    } break;
+    case JIMP_OCURLY: {
+        while(jimp_object_member(jimp)) {
+            if (!jimp_skip_member(jimp)) return false;
+        }
+        return jimp_object_end(jimp);
+    } break;
+    case JIMP_INVALID:
+    case JIMP_EOF:
+    case JIMP_CCURLY:
+    case JIMP_CBRACKET:
+    case JIMP_COMMA:
+    case JIMP_COLON:
+    default: return false;
+    }
+    return false;
 }
 
 #endif // JIMP_IMPLEMENTATION

@@ -36,7 +36,8 @@ bool parse_person(Jimp *jimp, Person *p)
             if (!jimp_number(jimp)) return false;
             p->body_count = jimp->number;
         } else {
-            jimp_unknown_member(jimp);
+            // jimp_unknown_member(jimp);
+            jimp_skip_member(jimp);
             return false;
         }
     }
