@@ -210,8 +210,10 @@ void jim_integer(Jim *jim, long long int x)
 
 static int is_nan_or_inf(double x)
 {
-    unsigned long long int mask = (1ULL << 11ULL) - 1ULL;
-    return (((*(unsigned long long int*) &x) >> 52ULL) & mask) == mask;
+    unsigned long long bits;
+    memcpy(&bits, &x, sizeof(bits));
+
+    return ((bits >> 52ULL) & 0x7ffULL) == 0x7ffULL;
 }
 
 void jim_float(Jim *jim, double x, int precision)
